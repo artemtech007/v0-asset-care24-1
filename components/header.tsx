@@ -81,7 +81,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-24 sm:h-28 items-center justify-between">
-          <Link href="/" className="flex-shrink-0 flex flex-col" onClick={handleLogoClick}>
+          <Link href="/" className="flex-shrink-0 flex flex-col relative group" onClick={handleLogoClick}>
             <Image
               src="/images/logo.png"
               alt="AssetCare24 - Mein Zuhause"
@@ -92,6 +92,9 @@ export function Header() {
             />
             <span className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-medium">
               Ihr zuverlässiger Haushalts-Service
+            </span>
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded opacity-50 hover:opacity-100">
+                v1.1-nodocs
             </span>
           </Link>
 

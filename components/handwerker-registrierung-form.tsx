@@ -693,52 +693,12 @@ export function HandwerkerRegistrierungForm() {
                 onChange={(e) => updateFormData("qualifikationen", e.target.value)}
                 className="w-full h-24 px-4 py-3 rounded-lg border border-border bg-background dark:bg-[#0f1512] text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary"
               />
+              <p className="text-xs text-muted-foreground mt-2 italic">
+                Hinweis: Dokumente können später einfach per WhatsApp nachgereicht werden.
+              </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-3">Dokumente hochladen</label>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-                multiple
-                accept=".pdf,.jpg,.jpeg,.png"
-              />
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
-              >
-                <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground mb-1">
-                  Ziehen Sie Dateien hierher oder klicken Sie zum Hochladen
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Gewerbeanmeldung, Zertifikate, Portfolio (PDF, JPG, PNG)
-                </p>
-              </div>
-
-              {/* File List */}
-              {selectedFiles.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {selectedFiles.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between bg-card p-2 rounded border border-border"
-                    >
-                      <span className="text-sm truncate max-w-[200px] text-foreground">{file.name}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeFile(index)}
-                        className="text-muted-foreground hover:text-red-500"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Dokumente Upload entfernt */}
 
             <div className="space-y-3 pt-4 border-t border-border">
               <label className="flex items-start gap-3 cursor-pointer">
