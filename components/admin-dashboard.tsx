@@ -39,7 +39,7 @@ interface UserData {
   name: string
   email: string
   phone: string
-  type: "kunde" | "handwerker" | "firma"
+  type: "kunde" | "handwerker"
   status: "aktiv" | "inaktiv" | "gesperrt"
   registeredDate: string
   lastActive: string
@@ -85,19 +85,6 @@ const initialUsers: UserData[] = [
     verified: true,
     ordersCount: 45,
     rating: 4.8,
-  },
-  {
-    id: 3,
-    name: "Müller GmbH",
-    email: "info@mueller-gmbh.de",
-    phone: "+49 30 1234567",
-    type: "firma",
-    status: "aktiv",
-    registeredDate: "01.08.2025",
-    lastActive: "11.12.2025",
-    verified: true,
-    ordersCount: 120,
-    rating: 4.6,
   },
   {
     id: 4,
@@ -212,7 +199,7 @@ export function AdminDashboard() {
   const totalUsers = users.length
   const totalKunden = users.filter((u) => u.type === "kunde").length
   const totalHandwerker = users.filter((u) => u.type === "handwerker").length
-  const totalFirmen = users.filter((u) => u.type === "firma").length
+  const totalFirmen = 0 // Temporarily disabled for MVP
   const activeUsers = users.filter((u) => u.status === "aktiv").length
   const blockedUsers = users.filter((u) => u.status === "gesperrt").length
   const totalOrders = orders.length
@@ -225,7 +212,7 @@ export function AdminDashboard() {
       userFilter === "alle" ||
       (userFilter === "kunden" && user.type === "kunde") ||
       (userFilter === "handwerker" && user.type === "handwerker") ||
-      (userFilter === "firmen" && user.type === "firma")
+      false // Firmen filter disabled for MVP
     const matchesStatus = statusFilter === "alle" || user.status === statusFilter
     const matchesSearch =
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -283,8 +270,6 @@ export function AdminDashboard() {
         return <Users className="w-4 h-4" />
       case "handwerker":
         return <Wrench className="w-4 h-4" />
-      case "firma":
-        return <Building2 className="w-4 h-4" />
       default:
         return <Users className="w-4 h-4" />
     }

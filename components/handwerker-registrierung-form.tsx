@@ -33,7 +33,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 
-type RegistrationType = "einzelhandwerker" | "unternehmen" | null
+type RegistrationType = "einzelhandwerker" | null
 type Step = 1 | 2 | 3
 
 const specializations = [
@@ -54,7 +54,7 @@ const transportOptions = [
 
 export function HandwerkerRegistrierungForm() {
   const router = useRouter()
-  const [registrationType, setRegistrationType] = useState<RegistrationType>(null)
+  const [registrationType, setRegistrationType] = useState<RegistrationType>("einzelhandwerker")
   const [currentStep, setCurrentStep] = useState<Step>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -120,9 +120,6 @@ export function HandwerkerRegistrierungForm() {
       if (registrationType === "einzelhandwerker" && !formData.name.trim()) {
         newErrors.name = "Name ist erforderlich"
       }
-      if (registrationType === "unternehmen" && !formData.firmenname.trim()) {
-        newErrors.firmenname = "Firmenname ist erforderlich"
-      }
       if (!formData.email.trim()) {
         newErrors.email = "E-Mail ist erforderlich"
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -170,8 +167,6 @@ export function HandwerkerRegistrierungForm() {
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => (prev - 1) as Step)
-    } else {
-      setRegistrationType(null)
     }
   }
 
@@ -237,118 +232,6 @@ export function HandwerkerRegistrierungForm() {
     )
   }
 
-  // Registration type selection
-  if (!registrationType) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-xl font-semibold text-center text-foreground mb-8">Wählen Sie Ihren Registrierungstyp</h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Einzelhandwerker */}
-          <button
-            onClick={() => setRegistrationType("einzelhandwerker")}
-            className="group bg-card dark:bg-[#1a2420] rounded-2xl p-8 border-2 border-border hover:border-primary transition-all duration-300 text-left"
-          >
-            <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-              <User className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Einzelhandwerker</h3>
-            <p className="text-muted-foreground mb-6">
-              Sie arbeiten selbstständig und möchten direkt Aufträge erhalten.
-            </p>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                Persönliche Daten
-              </li>
-              <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                Spezialisierungen wählen
-              </li>
-              <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                Arbeitsradius festlegen
-              </li>
-              <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                Portfolio-Fotos hochladen
-              </li>
-            </ul>
-            <div className="mt-6 flex items-center text-primary font-medium">
-              Jetzt starten
-              <ChevronRight className="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </button>
-
-          {/* Handwerksunternehmen */}
-          <button
-            onClick={() => setRegistrationType("unternehmen")}
-            className="group bg-card dark:bg-[#1a2420] rounded-2xl p-8 border-2 border-border hover:border-primary transition-all duration-300 text-left"
-          >
-            <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-              <Building2 className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">Handwerksunternehmen</h3>
-            <p className="text-muted-foreground mb-6">
-              Sie haben ein Team und möchten Aufträge für Ihre Firma erhalten.
-            </p>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                Firmendaten eingeben
-              </li>
-              <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                Mitarbeiter hinzufügen
-              </li>
-              <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                Dienstleistungen definieren
-              </li>
-              <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                Firmenportfolio erstellen
-              </li>
-            </ul>
-            <div className="mt-6 flex items-center text-primary font-medium">
-              Jetzt starten
-              <ChevronRight className="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </button>
-        </div>
-
-        {/* Benefits */}
-        <div className="mt-12 grid md:grid-cols-3 gap-6">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Shield className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-1">Verifiziert & Sicher</h4>
-              <p className="text-sm text-muted-foreground">Alle Daten werden nach DSGVO geschützt</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Award className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-1">Reputation aufbauen</h4>
-              <p className="text-sm text-muted-foreground">Kundenbewertungen steigern Ihre Sichtbarkeit</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Users className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-1">Stabile Aufträge</h4>
-              <p className="text-sm text-muted-foreground">Zugang zu langfristigen Kundenbeziehungen</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   // Multi-step form
   return (

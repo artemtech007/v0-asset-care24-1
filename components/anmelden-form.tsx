@@ -6,7 +6,7 @@ import { User, Wrench, Building2, Phone, Lock, Eye, EyeOff, Shield } from "lucid
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-type UserRole = "kunde" | "handwerker" | "firma" | "admin"
+type UserRole = "kunde" | "handwerker" | "admin"
 
 const TEST_ACCOUNTS = [
   {
@@ -22,13 +22,6 @@ const TEST_ACCOUNTS = [
     telefon: "+49 100 000002",
     passwort: "handwerker123",
     dashboard: "/dashboard/handwerker",
-  },
-  {
-    role: "firma" as UserRole,
-    label: "Firma",
-    telefon: "+49 100 000003",
-    passwort: "firma123",
-    dashboard: "/dashboard/firma",
   },
   {
     role: "admin" as UserRole,
@@ -79,8 +72,6 @@ export function AnmeldenForm() {
 
     if (role === "admin") {
       router.push("/dashboard/admin")
-    } else if (role === "firma") {
-      router.push("/dashboard/firma")
     } else if (role === "handwerker") {
       router.push("/dashboard/handwerker")
     } else {
@@ -114,7 +105,6 @@ export function AnmeldenForm() {
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                   {account.role === "kunde" && <User className="w-4 h-4 text-primary" />}
                   {account.role === "handwerker" && <Wrench className="w-4 h-4 text-primary" />}
-                  {account.role === "firma" && <Building2 className="w-4 h-4 text-primary" />}
                   {account.role === "admin" && <Shield className="w-4 h-4 text-primary" />}
                 </div>
                 <div>
@@ -174,26 +164,6 @@ export function AnmeldenForm() {
             </span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setRole("firma")}
-            className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-              role === "firma"
-                ? "border-primary bg-primary/5 dark:bg-primary/10"
-                : "border-border hover:border-primary/50 dark:bg-[#0f1512]"
-            }`}
-          >
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 transition-colors ${
-                role === "firma" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-              }`}
-            >
-              <Building2 className="w-5 h-5" />
-            </div>
-            <span className={`font-semibold text-sm ${role === "firma" ? "text-primary" : "text-foreground"}`}>
-              Firma
-            </span>
-          </button>
 
           <button
             type="button"
