@@ -234,17 +234,47 @@ export function ServiceAnfragenForm() {
           {roles.map((role) => (
             <button
               key={role.id}
-              onClick={() => setSelectedRole(role.id)}
-              className="flex items-center gap-4 p-6 rounded-xl border-2 border-border hover:border-primary bg-background dark:bg-[#0f1512] transition-all duration-200 hover:shadow-md text-left group"
+              onClick={() => role.id !== "hausverwalter" && setSelectedRole(role.id)}
+              disabled={role.id === "hausverwalter"}
+              className={`flex items-center gap-4 p-6 rounded-xl border-2 transition-all duration-200 text-left group ${
+                role.id === "hausverwalter"
+                  ? "border-muted bg-muted/30 dark:bg-muted/10 cursor-not-allowed opacity-60"
+                  : "border-border hover:border-primary bg-background dark:bg-[#0f1512] hover:shadow-md"
+              }`}
             >
-              <div className="w-14 h-14 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                <role.icon className="w-7 h-7 text-primary group-hover:text-white" />
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-colors ${
+                role.id === "hausverwalter"
+                  ? "bg-muted/50 dark:bg-muted/20"
+                  : "bg-primary/10 dark:bg-primary/20 group-hover:bg-primary"
+              }`}>
+                <role.icon className={`w-7 h-7 transition-colors ${
+                  role.id === "hausverwalter"
+                    ? "text-muted-foreground"
+                    : "text-primary group-hover:text-white"
+                }`} />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-foreground">{role.title}</h3>
-                <p className="text-muted-foreground text-sm">{role.description}</p>
+                <div className="flex items-center justify-between">
+                  <h3 className={`text-lg font-semibold ${
+                    role.id === "hausverwalter" ? "text-muted-foreground" : "text-foreground"
+                  }`}>
+                    {role.title}
+                  </h3>
+                  {role.id === "hausverwalter" && (
+                    <span className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded-full font-medium">
+                      Demnächst
+                    </span>
+                  )}
+                </div>
+                <p className={`text-sm ${
+                  role.id === "hausverwalter" ? "text-muted-foreground/70" : "text-muted-foreground"
+                }`}>
+                  {role.description}
+                </p>
               </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              {role.id !== "hausverwalter" && (
+                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              )}
             </button>
           ))}
         </div>
@@ -286,6 +316,7 @@ export function ServiceAnfragenForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+
         {/* HAUSVERWALTER FORM */}
         {selectedRole === "hausverwalter" && (
           <>

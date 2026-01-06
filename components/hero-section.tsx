@@ -77,13 +77,6 @@ export function HeroSection() {
         style={{ transform: "translateZ(0)" }}
       />
 
-      <AnimatedParticles />
-
-      <FloatingIcon icon={Lightbulb} className="top-20 left-[10%] hidden lg:block" delay={200} />
-      <FloatingIcon icon={Snowflake} className="top-32 right-[12%] hidden lg:block" delay={400} />
-      <FloatingIcon icon={Wrench} className="bottom-32 left-[15%] hidden lg:block" delay={600} />
-      <FloatingIcon icon={Home} className="bottom-24 right-[10%] hidden lg:block" delay={800} />
-      <FloatingIcon icon={Sparkles} className="top-1/2 left-[5%] hidden xl:block" delay={1000} />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
@@ -120,19 +113,16 @@ export function HeroSection() {
             }`}
             style={{ transform: isLoaded ? "translateY(0) translateZ(0)" : "translateY(2rem) translateZ(0)" }}
           >
-            <div className="relative inline-block group">
-              <div className="absolute -inset-1 bg-accent/50 rounded-xl blur-lg opacity-70 group-hover:opacity-100 transition-opacity" />
-              <Button
-                asChild
-                size="lg"
-                className="relative bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-8 py-6 h-auto rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 group"
-              >
-                <Link href="/meldung">
-                  JETZT ANFRAGE STELLEN
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform duration-300" />
-                </Link>
-              </Button>
-            </div>
+            <Button
+              asChild
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-8 py-6 h-auto rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
+            >
+              <Link href="/meldung">
+                JETZT ANFRAGE STELLEN
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform duration-300" />
+              </Link>
+            </Button>
 
             <div className="relative inline-block group">
               <Button

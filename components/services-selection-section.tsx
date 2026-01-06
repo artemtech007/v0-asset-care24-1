@@ -31,6 +31,7 @@ const roles = [
       { icon: MessageSquare, text: "Gruppenkommunikation" },
     ],
     color: "primary",
+    disabled: true,
   },
   {
     id: "eigentuemer",
@@ -44,6 +45,7 @@ const roles = [
       { icon: PiggyBank, text: "Budgetplanung" },
     ],
     color: "primary",
+    disabled: false,
   },
   {
     id: "mieter",
@@ -57,6 +59,7 @@ const roles = [
       { icon: Phone, text: "Notrufe" },
     ],
     color: "primary",
+    disabled: false,
   },
 ]
 
@@ -76,26 +79,59 @@ export function ServicesSelectionSection() {
           {roles.map((role, index) => (
             <div
               key={role.id}
-              className="group bg-card dark:bg-[#1a2420] rounded-2xl border border-border p-8 hover:shadow-xl hover:border-primary/30 transition-all duration-300 flex flex-col"
+              className={`rounded-2xl border p-8 transition-all duration-300 flex flex-col ${
+                role.disabled
+                  ? "bg-muted/30 dark:bg-muted/10 border-muted/50 cursor-not-allowed opacity-75"
+                  : "group bg-card dark:bg-[#1a2420] border-border hover:shadow-xl hover:border-primary/30"
+              }`}
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {/* Icon and Title */}
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
-                  <role.icon className="w-7 h-7 text-primary group-hover:text-white transition-colors" />
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                  role.disabled
+                    ? "bg-muted/50 dark:bg-muted/20"
+                    : "bg-primary/10 dark:bg-primary/20 group-hover:bg-primary group-hover:scale-110"
+                }`}>
+                  <role.icon className={`w-7 h-7 transition-colors ${
+                    role.disabled ? "text-muted-foreground" : "text-primary group-hover:text-white"
+                  }`} />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-foreground">{role.title}</h3>
-                  <p className="text-sm text-muted-foreground">{role.subtitle}</p>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className={`text-xl font-bold ${
+                      role.disabled ? "text-muted-foreground" : "text-foreground"
+                    }`}>
+                      {role.title}
+                    </h3>
+                    {role.disabled && (
+                      <span className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded-full font-medium">
+                        Demnächst
+                      </span>
+                    )}
+                  </div>
+                  <p className={`text-sm ${
+                    role.disabled ? "text-muted-foreground/70" : "text-muted-foreground"
+                  }`}>
+                    {role.subtitle}
+                  </p>
                 </div>
               </div>
 
               {/* Features List */}
               <ul className="space-y-3 mb-8 flex-grow">
                 {role.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-3 text-muted-foreground">
-                    <div className="w-8 h-8 rounded-lg bg-primary/5 dark:bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <feature.icon className="w-4 h-4 text-primary" />
+                  <li key={idx} className={`flex items-center gap-3 ${
+                    role.disabled ? "text-muted-foreground/70" : "text-muted-foreground"
+                  }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      role.disabled
+                        ? "bg-muted/30 dark:bg-muted/20"
+                        : "bg-primary/5 dark:bg-primary/10"
+                    }`}>
+                      <feature.icon className={`w-4 h-4 ${
+                        role.disabled ? "text-muted-foreground" : "text-primary"
+                      }`} />
                     </div>
                     <span>{feature.text}</span>
                   </li>
@@ -103,13 +139,19 @@ export function ServicesSelectionSection() {
               </ul>
 
               {/* CTA Button */}
-              <Link
-                href={`/meldung?rolle=${role.id}`}
-                className="w-full py-4 px-6 bg-accent hover:bg-accent/90 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 group-hover:shadow-lg"
-              >
-                Jetzt anfragen
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              {role.disabled ? (
+                <div className="w-full py-4 px-6 bg-muted text-muted-foreground font-semibold rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
+                  Demnächst verfügbar
+                </div>
+              ) : (
+                <Link
+                  href={`/meldung?rolle=${role.id}`}
+                  className="w-full py-4 px-6 bg-accent hover:bg-accent/90 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 group-hover:shadow-lg"
+                >
+                  Jetzt anfragen
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
             </div>
           ))}
         </div>
