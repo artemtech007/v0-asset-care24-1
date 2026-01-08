@@ -127,7 +127,7 @@ export function ServicesSelectionSection() {
               {/* CTA Button */}
               {role.id === 'kunde' ? (
                 <a
-                  href="https://wa.me/4915510415655"
+                  href="https://wa.me/4915510415655?text=Ich%20möchte%20eine%20Anfrage%20stellen"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full py-4 px-6 bg-accent hover:bg-accent/90 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 group-hover:shadow-lg"

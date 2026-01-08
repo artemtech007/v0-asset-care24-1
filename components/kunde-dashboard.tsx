@@ -349,7 +349,7 @@ export function KundeDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <a href="https://wa.me/4915510415655" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/4915510415655?text=Ich%20möchte%20eine%20Anfrage%20stellen" target="_blank" rel="noopener noreferrer">
                 <Button className="bg-accent hover:bg-accent/90 text-white rounded-full px-6">
                   <Plus className="w-4 h-4 mr-2" />
                   Neue Anfrage
