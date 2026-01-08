@@ -141,25 +141,6 @@ export function Header() {
               </a>
             )}
 
-            {/* Desktop buttons - only show at 1200px+ */}
-            {showDesktopNav && (
-              <>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold px-5 py-2.5 text-sm transition-all duration-200 bg-transparent"
-                >
-                  <Link href="/registrierung">Registrieren</Link>
-                </Button>
-
-                <Button
-                  asChild
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-5 lg:px-6 py-2.5 text-sm lg:text-base transition-all duration-200 hover:scale-105"
-                >
-                  <Link href="/meldung">Service anfragen</Link>
-                </Button>
-              </>
-            )}
 
             {showHamburger && (
               <button
@@ -213,12 +194,6 @@ export function Header() {
                   className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent h-12 text-base"
                 >
                   <Link href="/registrierung">Registrieren</Link>
-                </Button>
-                <Button
-                  asChild
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium w-full h-12 text-base"
-                >
-                  <Link href="/meldung">Service anfragen</Link>
                 </Button>
               </div>
             </nav>
