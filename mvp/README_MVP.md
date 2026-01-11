@@ -64,6 +64,7 @@
 *   [05_n8n_workflows.md](./05_n8n_workflows.md) — Общее описание всех сценариев.
 *   [workflows/01_router.md](./workflows/01_router.md) — Детальная спецификация Роутера.
 *   [admin_dashboard_plan.md](./admin_dashboard_plan.md) — План реализации админ-панели.
+*   [git_github_workflow.md](./git_github_workflow.md) — Полное руководство по работе с Git и GitHub.
 
 ---
 
