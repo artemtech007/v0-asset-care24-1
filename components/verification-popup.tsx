@@ -85,7 +85,7 @@ export function VerificationPopup({ isOpen, onClose, onVerify, contactMethod }: 
           <DialogTitle className="text-center text-xl">Konto bestätigen</DialogTitle>
           <DialogDescription className="text-center">
             Geben Sie den Bestätigungscode ein, den wir Ihnen per {contactMethod === "whatsapp" ? "WhatsApp" : "E-Mail"}{" "}
-            gesendet haben, um Zugriff auf die Funktionen Ihres persönlichen Bereichs zu erhalten.
+            gesendet haben, um Ihre vorläufige Registrierung abzuschließen.
           </DialogDescription>
         </DialogHeader>
 
@@ -153,6 +153,47 @@ export function VerificationPopup({ isOpen, onClose, onVerify, contactMethod }: 
             </button>
             <p className="text-xs text-muted-foreground mt-1">Einige Funktionen sind ohne Bestätigung eingeschränkt</p>
           </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+interface SuccessPopupProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export function SuccessPopup({ isOpen, onClose }: SuccessPopupProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
+            <CheckCircle className="h-8 w-8 text-green-600" />
+          </div>
+          <DialogTitle className="text-center text-xl">Herzlich willkommen!</DialogTitle>
+          <DialogDescription className="text-center">
+            Vielen Dank für Ihre vorläufige Registrierung als Handwerker bei AssetCare24.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              Wir werden uns in Kürze mit Ihnen über WhatsApp in Verbindung setzen, um weitere Details zu klären und Ihre Registrierung abzuschließen.
+            </p>
+          </div>
+
+          <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+            <p className="text-sm text-green-800 dark:text-green-200">
+              Bitte halten Sie Ihr WhatsApp bereit. Sie erhalten von uns eine Nachricht mit weiteren Anweisungen.
+            </p>
+          </div>
+
+          <Button onClick={onClose} className="w-full bg-primary hover:bg-primary/90">
+            Verstanden
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

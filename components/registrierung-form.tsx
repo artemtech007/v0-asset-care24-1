@@ -31,6 +31,7 @@ import {
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
+import { VerificationPopup, SuccessPopup } from "@/components/verification-popup"
 
 type HandwerkerType = "einzelhandwerker" | null
 
@@ -56,9 +57,10 @@ export function RegistrierungForm() {
 
   // Handwerker form data
   const [handwerkerData, setHandwerkerData] = useState({
-    name: "",
+    vorname: "",
+    nachname: "",
     email: "",
-    telefon: "",
+    whatsapp: "",
     passwort: "",
     specializations: [] as string[],
     workingHours: { start: "08:00", end: "18:00" },
@@ -75,15 +77,18 @@ export function RegistrierungForm() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showVerification, setShowVerification] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
 
 
   const validateHandwerkerStep = (currentStep: number) => {
     const newErrors: Record<string, string> = {}
 
     if (currentStep === 1) {
-      if (!handwerkerData.name.trim()) newErrors.name = "Name ist erforderlich"
+      if (!handwerkerData.vorname.trim()) newErrors.vorname = "Vorname ist erforderlich"
+      if (!handwerkerData.nachname.trim()) newErrors.nachname = "Nachname ist erforderlich"
       if (!handwerkerData.email.trim()) newErrors.email = "E-Mail ist erforderlich"
-      if (!handwerkerData.telefon.trim()) newErrors.telefon = "Telefonnummer ist erforderlich"
+      if (!handwerkerData.whatsapp.trim()) newErrors.whatsapp = "WhatsApp-Nummer ist erforderlich"
       if (!handwerkerData.passwort) newErrors.passwort = "Passwort ist erforderlich"
       else if (handwerkerData.passwort.length < 6) newErrors.passwort = "Mindestens 6 Zeichen"
       if (handwerkerData.specializations.length === 0) {
@@ -107,13 +112,56 @@ export function RegistrierungForm() {
     }
   }
 
+  const sendToWebhook = async (webhookUrl: string, data: any) => {
+    try {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) {
+        console.error(`Webhook failed for ${webhookUrl}:`, response.status)
+      } else {
+        console.log(`Webhook success for ${webhookUrl}`)
+      }
+    } catch (error) {
+      console.error(`Webhook error for ${webhookUrl}:`, error)
+    }
+  }
+
   const handleHandwerkerSubmit = async () => {
     if (!validateHandwerkerStep(3)) return
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Prepare data for webhook
+    const webhookData = {
+      vorname: handwerkerData.vorname,
+      nachname: handwerkerData.nachname,
+      email: handwerkerData.email,
+      whatsapp: handwerkerData.whatsapp,
+      specializations: handwerkerData.specializations,
+      workingHours: handwerkerData.workingHours,
+      workingDays: handwerkerData.workingDays,
+      serviceArea: handwerkerData.serviceArea,
+      hasVehicle: handwerkerData.hasVehicle,
+      experience: handwerkerData.experience,
+      qualifications: handwerkerData.qualifications,
+      registrationType: 'einzelhandwerker',
+      timestamp: new Date().toISOString(),
+      source: 'website_registration'
+    }
+
+    // Send to production webhook
+    await sendToWebhook('https://assetcare24.org/webhook/d509d181-13ab-4c34-b192-4b8994ec9e49', webhookData)
+
+    // Send to test webhook
+    await sendToWebhook('https://assetcare24.org/webhook-test/d509d181-13ab-4c34-b192-4b8994ec9e49', webhookData)
+
     setIsSubmitting(false)
-    // Only Einzelhandwerker can register for now
-    router.push("/dashboard/handwerker")
+    // Show verification popup instead of redirecting to dashboard
+    setShowVerification(true)
   }
 
   const toggleSpecialization = (id: string) => {
@@ -123,6 +171,17 @@ export function RegistrierungForm() {
         ? prev.specializations.filter((s) => s !== id)
         : [...prev.specializations, id],
     }))
+  }
+
+  const handleVerificationSuccess = () => {
+    setShowVerification(false)
+    setShowSuccess(true)
+  }
+
+  const handleSuccessClose = () => {
+    setShowSuccess(false)
+    // Redirect to jobs page
+    router.push("/jobs")
   }
 
   const toggleWorkingDay = (day: string) => {
@@ -231,26 +290,47 @@ export function RegistrierungForm() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Name <span className="text-accent">*</span>
+            Vorname <span className="text-accent">*</span>
           </label>
           <div className="relative">
             <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
-              value={handwerkerData.name}
+              value={handwerkerData.vorname}
               onChange={(e) => {
-                setHandwerkerData({ ...handwerkerData, name: e.target.value })
-                if (errors.name) setErrors({ ...errors, name: "" })
+                setHandwerkerData({ ...handwerkerData, vorname: e.target.value })
+                if (errors.vorname) setErrors({ ...errors, vorname: "" })
               }}
               className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
-                errors.name ? "border-red-500" : "border-border"
+                errors.vorname ? "border-red-500" : "border-border"
               }`}
-              placeholder="Vollständiger Name"
+              placeholder="Vorname"
             />
           </div>
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+          {errors.vorname && <p className="text-red-500 text-sm mt-1">{errors.vorname}</p>}
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Nachname <span className="text-accent">*</span>
+          </label>
+          <div className="relative">
+            <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              type="text"
+              value={handwerkerData.nachname}
+              onChange={(e) => {
+                setHandwerkerData({ ...handwerkerData, nachname: e.target.value })
+                if (errors.nachname) setErrors({ ...errors, nachname: "" })
+              }}
+              className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
+                errors.nachname ? "border-red-500" : "border-border"
+              }`}
+              placeholder="Nachname"
+            />
+          </div>
+          {errors.nachname && <p className="text-red-500 text-sm mt-1">{errors.nachname}</p>}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -278,24 +358,24 @@ export function RegistrierungForm() {
 
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Telefon <span className="text-accent">*</span>
+            WhatsApp <span className="text-accent">*</span>
           </label>
           <div className="relative">
             <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="tel"
-              value={handwerkerData.telefon}
+              value={handwerkerData.whatsapp}
               onChange={(e) => {
-                setHandwerkerData({ ...handwerkerData, telefon: e.target.value })
-                if (errors.telefon) setErrors({ ...errors, telefon: "" })
+                setHandwerkerData({ ...handwerkerData, whatsapp: e.target.value })
+                if (errors.whatsapp) setErrors({ ...errors, whatsapp: "" })
               }}
               className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
-                errors.telefon ? "border-red-500" : "border-border"
+                errors.whatsapp ? "border-red-500" : "border-border"
               }`}
               placeholder="+49 123 456789"
             />
           </div>
-          {errors.telefon && <p className="text-red-500 text-sm mt-1">{errors.telefon}</p>}
+          {errors.whatsapp && <p className="text-red-500 text-sm mt-1">{errors.whatsapp}</p>}
         </div>
       </div>
 
@@ -781,6 +861,20 @@ export function RegistrierungForm() {
           </Link>
         </p>
       </div>
+
+      {/* Verification Popup */}
+      <VerificationPopup
+        isOpen={showVerification}
+        onClose={() => setShowVerification(false)}
+        onVerify={handleVerificationSuccess}
+        contactMethod="whatsapp"
+      />
+
+      {/* Success Popup */}
+      <SuccessPopup
+        isOpen={showSuccess}
+        onClose={handleSuccessClose}
+      />
     </div>
   )
 }

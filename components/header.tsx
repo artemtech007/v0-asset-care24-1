@@ -73,7 +73,7 @@ export function Header() {
   const allNavItems = isLoggedIn
     ? [
         ...navItems,
-        { label: "Mein Konto", href: pathname.includes("handwerker") ? "/dashboard/handwerker" : "/dashboard/kunde" },
+        { label: "Mein Konto", href: "/dashboard/kunde" },
       ]
     : navItems
 

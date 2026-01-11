@@ -21,7 +21,7 @@ const TEST_ACCOUNTS = [
     label: "Handwerker",
     telefon: "+49 100 000002",
     passwort: "handwerker123",
-    dashboard: "/dashboard/handwerker",
+    dashboard: "/dashboard/kunde",
   },
   {
     role: "admin" as UserRole,
@@ -72,8 +72,6 @@ export function AnmeldenForm() {
 
     if (role === "admin") {
       router.push("/dashboard/admin")
-    } else if (role === "handwerker") {
-      router.push("/dashboard/handwerker")
     } else {
       router.push("/dashboard/kunde")
     }
