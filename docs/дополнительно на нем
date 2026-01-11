@@ -1,0 +1,245 @@
+
+
+🟦 ASSETCARE24 – Gemeinschaftseigentum vs. Private Anfrage
+
+klar – logisch – für die Werbeagentur verständlich
+
+1. Ausgangssituation
+
+AssetCare24 wird für zwei grundlegend unterschiedliche Arten von Eigentum verwendet:
+
+1. Objektbezogene Mehrfamilienhäuser
+– mit Gemeinschaftseigentum
+– und Sondereigentum / privaten Bereichen
+
+
+2. Einfamilienhäuser oder private Eigentumseinheiten
+– ohne Gemeinschaftseigentum
+– nur private Bereiche
+
+
+Das System muss beide Fälle abbilden.
+
+2. QR-Code im Mehrfamilienhaus
+
+Wenn im Mehrfamilienhaus ein objektbezogener QR-Code angebracht ist, gilt:
+
+Der QR-Code führt in den Chat / die Objektseite des Gebäudes.
+
+Dort sieht der Nutzer:
+
+die Historie der zuletzt ausgeführten Arbeiten
+
+zukünftige geplante Termine
+
+das Objekt-Team (zuständige Handwerker)
+
+sämtliche Arbeiten im Gemeinschaftsbereich
+
+
+Das betrifft:
+
+Treppenhausreinigung
+
+Gartenpflege
+
+Winterdienst
+
+Müllplatzpflege
+
+Hausmeistertätigkeiten
+
+Kontrollgänge
+
+usw.
+
+3. Zwei Arten der Anfrage für Mieter/Eigentümer
+
+Innerhalb dieses objektbezogenen Bereichs müssen Mieter und Eigentümer zwei getrennte Anfragemöglichkeiten haben:
+
+A) Gemeinschaftliche Anfrage („Gemeinschaftseigentum“)
+
+betrifft alle Bewohner:
+
+Treppenhaus
+
+Außenanlagen
+
+Müllplätze
+
+Wege
+
+Beleuchtung
+
+Gebäudeeingänge
+
+gemeinschaftliche Kellerräume
+
+Fahrradkeller
+
+Gebäudetechnik
+
+usw.
+
+
+Diese Anfrage geht automatisch an die für das Objekt hinterlegten:
+
+Handwerker
+
+Objektbetreuer
+
+Hausverwaltung (falls vorhanden)
+
+B) Private Anfrage („Privateigentum / Mietwohnung“)
+
+betrifft nur die eigene Wohnung bzw. private Fläche:
+
+Fensterreinigung in der Wohnung
+
+Reparaturen in der Wohnung
+
+privat beauftragte Gartenarbeiten
+
+Haushaltsnahe Dienstleistungen
+
+Schönheitsreparaturen
+
+usw.
+
+
+Diese Anfrage wird nicht an das Objekt-Team geschickt,
+sondern wie jede übliche Kundenanfrage behandelt – direkt an die passenden Handwerker nach PLZ/Tätigkeit.
+
+4. Einfamilienhäuser / private Häuser
+
+Wenn der QR-Code in einem:
+
+Einfamilienhaus
+
+Reihenhaus
+
+Doppelhaus
+
+oder privaten Eigentum
+
+angebracht ist, gibt es keine Trennung:
+
+Es gibt nur private Anfragen, da kein Gemeinschaftseigentum existiert.
+
+Hier reicht ein einziger Button:
+
+„Anfrage stellen“
+
+5. Wie erkennt das System die richtige Struktur?
+
+Beim Einscannen des QR-Codes erkennt das System automatisch:
+
+handelt es sich um ein Mehrfamilienhaus?
+
+oder um ein Einfamilienhaus/private Einheit?
+
+
+Dies basiert auf:
+
+Objekt-ID (hinterlegt im CRM)
+
+QR-Code-Zuordnung zum Objekt
+
+gespeicherten Objekttypen
+
+6. Benutzeroberfläche im Mehrfamilienhaus (für Mieter/Eigentümer)
+
+Nach dem Scan des objektbezogenen QR-Codes soll der Nutzer zwei Buttons sehen:
+
+🔵 1. Gemeinschaftliche Anfrage stellen
+
+(betrifft das gesamte Haus)
+
+🟢 2. Private Anfrage stellen
+
+(betrifft nur die eigene Wohnung)
+
+Damit ist sofort klar:
+
+Button 1 → geht an Objektteam / Hausverwaltung
+
+Button 2 → geht an allgemeine Handwerker für private Tätigkeiten
+
+7. Historie & Kalender im Mehrfamilienhaus
+
+Im objektbezogenen Bereich soll sichtbar sein:
+
+A) Historie
+
+letzte Treppenhausreinigung
+
+letzte Gartenpflege
+
+letzte Kontrollrunde
+
+letzte Winterdienst-Aktion
+
+wer die Arbeit ausgeführt hat
+
+Datum, Uhrzeit
+
+Fotos vor/nach der Arbeit
+
+
+B) Kalender
+
+geplante Reinigungstermine
+
+geplante Gartenarbeiten
+
+geplante Winterdienste
+
+geplante Kontrollgänge
+
+geplante Einsätze des Objekt-Teams
+
+Diese Übersicht soll für:
+
+Mieter
+
+Eigentümer
+
+Hausverwalter
+
+sichtbar sein.
+
+8. Objektbezogene QR-Codes in Wohnungen (optional)
+
+Optional können auch Wohnungs-spezifische QR-Codes vergeben werden – für:
+
+reine Privatbereiche
+
+direkte private Anfragen der Bewohner
+
+Das System ordnet dann automatisch der Wohnung statt dem Gebäude zu.
+
+(Diese Funktion ist möglich, aber noch nicht fest definiert – nur als Idee vermerkt.)
+
+9. Zusammenfassung (kurz und eindeutig)
+
+Jedes Objekt erhält einen eigenen QR-Code.
+
+Beim Einscannen erkennt das System automatisch das Objekt.
+
+Nutzer im Mehrfamilienhaus müssen zwei Auswahlmöglichkeiten haben:
+
+1. Gemeinschaftliche Anfrage
+
+2. Private Anfrage
+
+Einfamilienhäuser haben nur private Anfragen.
+
+Der objektbezogene Bereich zeigt:
+
+Historie der letzten Arbeiten
+
+Kalender der geplanten Arbeiten
+
+Gemeinsame Anfragen gehen ans Objekt-Team.
+
+Private Anfragen laufen wie normale Kundenaufträge.

@@ -1,0 +1,218 @@
+{
+  "name": "TiktokYoutube Rapidapi webhooks",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Tiktok Video Feature Summary - GET related video ,\n##  region,  max 30, publish_time, sort type, cursor!\n\n**https://rapidapi.com/liuzhaolong765481/api/tiktok-video-feature-summary/playground/apiendpoint_57cac167-8a18-42d5-b9a2-406508e44824** \n\n",
+        "height": 368,
+        "width": 672,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        1392
+      ],
+      "id": "27a8d4fb-0836-4b32-9944-2422974e98f9",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Tiktok Api  Ads Get Trending Video 5 params\n**https://rapidapi.com/Lundehund/api/tiktok-api23/playground/apiendpoint_e5ed113c-edf3-4fad-b2c9-4e72e378b6de** \n\n",
+        "height": 304,
+        "width": 672,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        992
+      ],
+      "id": "1e55fc79-b7f4-4234-b92b-cdee064efaf5",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "path": "/request/:id&:user",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -16,
+        1504
+      ],
+      "id": "0371c839-017f-4e37-8ccf-9b3f2f585ebf",
+      "name": "Webhook 2",
+      "webhookId": "c76daef2-8f1a-42e0-af59-18dc0c1eeaae"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">\n    <script src=\"https://telegram.org/js/telegram-web-app.js\"></script>\n    <title>Tiktok Video Feature Summary API</title>\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            margin: 0;\n            padding: 0;\n            background-color: #f5f5f5;\n            font-size: 16px;\n            height: 100vh;\n            display: flex;\n            flex-direction: column;\n        }\n\n        .header {\n            background: #007bff;\n            color: white;\n            padding: 15px;\n            text-align: center;\n            position: sticky;\n            z-index: 10;\n            top: 0;\n        }\n\n        .form-container {\n            flex: 1;\n            overflow-y: auto;\n            padding: 20px;\n            box-sizing: border-box;\n        }\n\n        .form-group {\n            margin-bottom: 20px;\n        }\n\n        .form-label {\n            display: block;\n            margin-bottom: 5px;\n            font-weight: bold;\n            color: #333;\n        }\n\n        .form-input, .form-select {\n            width: 100%;\n            padding: 12px;\n            border: 1px solid #ddd;\n            border-radius: 8px;\n            font-size: 16px;\n            background: white;\n            box-sizing: border-box;\n        }\n\n        .form-select {\n            cursor: pointer;\n        }\n\n        .form-input:focus, .form-select:focus {\n            outline: none;\n            border-color: #007bff;\n            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);\n        }\n\n        .submit-btn {\n            background: #28a745;\n            color: white;\n            border: none;\n            border-radius: 8px;\n            padding: 15px;\n            font-size: 16px;\n            cursor: pointer;\n            width: 100%;\n            transition: background 0.3s;\n            margin-top: 20px;\n        }\n\n        .submit-btn:hover {\n            background: #218838;\n        }\n\n        .back-btn {\n            background: #6c757d;\n            color: white;\n            border: none;\n            border-radius: 8px;\n            padding: 12px;\n            font-size: 16px;\n            cursor: pointer;\n            width: 100%;\n            transition: background 0.3s;\n            margin-top: 10px;\n        }\n\n        .back-btn:hover {\n            background: #545b62;\n        }\n\n        /* Стили для скроллбара */\n        .form-container::-webkit-scrollbar {\n            width: 6px;\n        }\n\n        .form-container::-webkit-scrollbar-track {\n            background: #f1f1f1;\n            border-radius: 3px;\n        }\n\n        .form-container::-webkit-scrollbar-thumb {\n            background: #c0c0c0;\n            border-radius: 3px;\n        }\n\n        .form-container::-webkit-scrollbar-thumb:hover {\n            background: #a0a0a0;\n        }\n\n        @media (min-width: 600px) {\n            body {\n                font-size: 14px;\n            }\n            .form-group {\n                margin-bottom: 15px;\n            }\n            .form-input, .form-select {\n                font-size: 15px;\n            }\n        }\n    </style>\n</head>\n<body>\n    <!-- Фиксированная заголовок -->\n    <div class=\"header\">\n        <h2>TikTok Video Feature Summary API</h2>\n    </div>\n\n    <!-- Форма параметров -->\n    <div class=\"form-container\">\n        <form id=\"apiForm\">\n            <div class=\"form-group\">\n                <label class=\"form-label\" for=\"keywords\">Keywords (ключевые слова) *:</label>\n                <input type=\"text\" id=\"keywords\" name=\"keywords\" class=\"form-input\" placeholder=\"car edits, funny cats...\" required>\n            </div>\n\n            <div class=\"form-group\">\n                <label class=\"form-label\" for=\"cursor\">Cursor (курсор пагинации):</label>\n                <input type=\"number\" id=\"cursor\" name=\"cursor\" class=\"form-input\" value=\"0\" min=\"0\">\n            </div>\n\n            <div class=\"form-group\">\n                <label class=\"form-label\" for=\"count\">Count (количество результатов):</label>\n                <input type=\"number\" id=\"count\" name=\"count\" class=\"form-input\" value=\"30\" min=\"1\" max=\"30\">\n            </div>\n\n            <div class=\"form-group\">\n                <label class=\"form-label\" for=\"publish_time\">Publish Time (время публикации):</label>\n                <select id=\"publish_time\" name=\"publish_time\" class=\"form-select\">\n                    <option value=\"0\">ALL - Все время</option>\n                    <option value=\"1\">Past 24 hours - Последние 24 часа</option>\n                    <option value=\"7\">This week - Эта неделя</option>\n                    <option value=\"30\">This month - Этот месяц</option>\n                    <option value=\"90\">Last 3 months - Последние 3 месяца</option>\n                    <option value=\"180\">Last 6 months - Последние 6 месяцев</option>\n                </select>\n            </div>\n\n            <div class=\"form-group\">\n                <label class=\"form-label\" for=\"sort_type\">Sort Type (тип сортировки):</label>\n                <select id=\"sort_type\" name=\"sort_type\" class=\"form-select\">\n                    <option value=\"0\">Relevance - Релевантность</option>\n                    <option value=\"1\" selected>Like count - По лайкам</option>\n                    <option value=\"3\">Date posted - По дате публикации</option>\n                </select>\n            </div>\n\n            <div class=\"form-group\">\n                <label class=\"form-label\" for=\"region\">Region (регион):</label>\n                <select id=\"region\" name=\"region\" class=\"form-select\">\n                    <option value=\"AE\">United Arab Emirates</option>\n                    <option value=\"AM\">Armenia</option>\n                    <option value=\"AR\">Argentina</option>\n                    <option value=\"AT\">Austria</option>\n                    <option value=\"AU\">Australia</option>\n                    <option value=\"BR\">Brazil</option>\n                    <option value=\"BY\">Belarus</option>\n                    <option value=\"CA\">Canada</option>\n                    <option value=\"CH\">Switzerland</option>\n                    <option value=\"CN\">China mainland</option>\n                    <option value=\"CO\">Colombia</option>\n                    <option value=\"CY\">Cyprus</option>\n                    <option value=\"CZ\">Czechia</option>\n                    <option value=\"DE\">Germany</option>\n                    <option value=\"ES\">Spain</option>\n                    <option value=\"FR\">France</option>\n                    <option value=\"GB\">United Kingdom</option>\n                    <option value=\"ID\">Indonesia</option>\n                    <option value=\"IE\">Ireland</option>\n                    <option value=\"IN\">India</option>\n                    <option value=\"IT\">Italy</option>\n                    <option value=\"JP\">Japan</option>\n                    <option value=\"KG\">Kyrgyzstan</option>\n                    <option value=\"KR\">Korea</option>\n                    <option value=\"KZ\">Kazakhstan</option>\n                    <option value=\"LT\">Lithuania</option>\n                    <option value=\"LV\">Latvia</option>\n                    <option value=\"MN\">Mongolia</option>\n                    <option value=\"MX\">Mexico</option>\n                    <option value=\"MY\">Malaysia</option>\n                    <option value=\"NL\">Netherlands</option>\n                    <option value=\"NZ\">New Zealand</option>\n                    <option value=\"PE\">Peru</option>\n                    <option value=\"PH\">Philippines</option>\n                    <option value=\"PT\">Portugal</option>\n                    <option value=\"QA\">Qatar</option>\n                    <option value=\"RU\">Russia</option>\n                    <option value=\"SE\">Sweden</option>\n                    <option value=\"TH\">Thailand</option>\n                    <option value=\"TJ\">Tajikstan</option>\n                    <option value=\"TM\">Turkmenistan</option>\n                    <option value=\"TR\">Turkey</option>\n                    <option value=\"US\" selected>United States</option>\n                    <option value=\"UZ\">Uzbekistan</option>\n                    <option value=\"VN\">Vietnam</option>\n                </select>\n            </div>\n\n            <button type=\"submit\" class=\"submit-btn\">Отправить запрос</button>\n            <button type=\"button\" class=\"back-btn\" onclick=\"goBack()\">⬅️ Назад</button>\n        </form>\n    </div>\n\n    <script>\n        // Инициализация Telegram WebApp\n        if (typeof Telegram !== \"undefined\" && Telegram.WebApp) {\n            Telegram.WebApp.ready();\n            console.log('Telegram WebApp initialized');\n        } else {\n            console.log('Telegram WebApp not available');\n        }\n\n        // Функция возврата назад\n        function goBack() {\n            if (typeof Telegram !== \"undefined\" && Telegram.WebApp) {\n                Telegram.WebApp.close();\n            } else {\n                window.history.back();\n            }\n        }\n\n        // Обработка отправки формы\n        document.getElementById('apiForm').addEventListener('submit', function(e) {\n            e.preventDefault();\n\n            // Получаем данные формы\n            const formData = new FormData(e.target);\n            const apiParams = {\n                keywords: formData.get('keywords') || '',\n                cursor: parseInt(formData.get('cursor')) || 0,\n                count: parseInt(formData.get('count')) || 10,\n                publish_time: parseInt(formData.get('publish_time')) || 0,\n                sort_type: parseInt(formData.get('sort_type')) || 0,\n                region: formData.get('region') || 'US'\n            };\n\n            console.log('Отправка параметров API:', apiParams);\n\n            // Получаем параметры пользователя\n            let userId = 'unknown';\n            let username = 'unknown';\n            let userSource = 'unknown';\n\n            // Пытаемся получить из n8n плейсхолдера\n            const userParam = '{{ $json.params[\"id&:user\"] }}';\n            console.log('Raw userParam from n8n:', userParam);\n\n            if (userParam && userParam !== '{{ $json.params[\"id&:user\"] }}') {\n                [userId, username] = userParam.split('&').map(part => part.replace(':', ''));\n                userSource = 'n8n';\n                console.log('User data from n8n - ID:', userId, 'Username:', username);\n            } else {\n                // Альтернативный способ - из Telegram WebApp\n                if (typeof Telegram !== \"undefined\" && Telegram.WebApp && Telegram.WebApp.initDataUnsafe) {\n                    const initData = Telegram.WebApp.initDataUnsafe;\n                    console.log('Telegram initData:', initData);\n                    if (initData.user) {\n                        userId = initData.user.id.toString();\n                        username = initData.user.username || 'unknown';\n                        userSource = 'telegram';\n                        console.log('User data from Telegram - ID:', userId, 'Username:', username);\n                    }\n                }\n            }\n\n            console.log('Final user data - Source:', userSource, 'ID:', userId, 'Username:', username);\n\n            // Отправляем запрос с параметрами API\n            fetch('https://botstroicom.site/webhook/6f9e9808-e95c-4366-8ab6-6ac7561604ff/requestform/:id&:user', {\n                method: 'POST',\n                mode: 'cors',\n                headers: { 'Content-Type': 'application/json' },\n                body: JSON.stringify({\n                    api_params: apiParams,\n                    user_id: userId,\n                    username: username,\n                    timestamp: new Date().toISOString()\n                })\n            })\n            .then(response => {\n                if (!response.ok) {\n                    throw new Error(`HTTP error! Status: ${response.status}`);\n                }\n                return response.json();\n            })\n            .then(data => {\n                // Показываем сообщение об успехе\n                if (typeof Telegram !== \"undefined\" && Telegram.WebApp) {\n                    Telegram.WebApp.showAlert('Параметры API успешно отправлены!');\n                } else {\n                    alert('Параметры API успешно отправлены!');\n                }\n                console.log('API params sent:', data);\n            })\n            .catch(error => {\n                const errorMessage = 'Ошибка при отправке параметров: ' + error.message;\n                if (typeof Telegram !== \"undefined\" && Telegram.WebApp) {\n                    Telegram.WebApp.showAlert(errorMessage);\n                } else {\n                    alert(errorMessage);\n                }\n                console.error('Send error:', error);\n            });\n        });\n\n        // Инициализация при загрузке страницы\n        document.addEventListener('DOMContentLoaded', function() {\n            console.log('TikTok API form loaded');\n        });\n    </script>\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        208,
+        1504
+      ],
+      "id": "fa42f123-a2ec-4b44-92bd-27ac07eb0dea",
+      "name": "Respond to Webhook 2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/requestform/:id&:user",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        432,
+        1504
+      ],
+      "id": "bd65fff0-f6aa-45df-ba9a-d896f6df3424",
+      "name": "Webhook 2_2",
+      "webhookId": "6f9e9808-e95c-4366-8ab6-6ac7561604ff"
+    },
+    {
+      "parameters": {
+        "content": "## Rapidapi\n\n\n",
+        "height": 880,
+        "width": 1536,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        880
+      ],
+      "id": "2ecc4d6c-3549-450d-988b-3569cbf2ac6d",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a079db54-e72c-438b-a494-e924053e0a64",
+              "name": "keywords",
+              "value": "={{ $json.body.api_params.keywords }}",
+              "type": "string"
+            },
+            {
+              "id": "5a5acd56-ebcd-43c6-88ce-9b2e0be88fb0",
+              "name": "cursor",
+              "value": "={{ $json.body.api_params.cursor }}",
+              "type": "number"
+            },
+            {
+              "id": "eafa12cb-751e-4955-81c5-6df89ac1fa8e",
+              "name": "count",
+              "value": "={{ $json.body.api_params.count }}",
+              "type": "number"
+            },
+            {
+              "id": "8359df2e-68a8-49bd-9666-f28e916e57d6",
+              "name": "publish_time",
+              "value": "={{ $json.body.api_params.publish_time }}",
+              "type": "number"
+            },
+            {
+              "id": "b904af44-4fbd-4c7d-b8a6-456da52f6696",
+              "name": "sort_type",
+              "value": "={{ $json.body.api_params.sort_type }}",
+              "type": "number"
+            },
+            {
+              "id": "dbef31e6-8d3d-4f69-9a51-073eb8a5d38d",
+              "name": "region",
+              "value": "={{ $json.body.api_params.region }}",
+              "type": "string"
+            },
+            {
+              "id": "7a2c8747-3d6b-4dfa-9204-475294010ec8",
+              "name": "user_id",
+              "value": "={{ $json.body.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "73a86ed7-f603-41c3-a526-cde61fa0c233",
+              "name": "username",
+              "value": "={{ $json.body.username }}",
+              "type": "string"
+            },
+            {
+              "id": "a033bf23-0e94-407f-b99c-0c064020e1cd",
+              "name": "timestamp",
+              "value": "={{ $json.body.timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "d899a72b-cd39-4ecb-ba3d-5e33d350400e",
+              "name": "way",
+              "value": "rapidapi_complex_2",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        1504
+      ],
+      "id": "a9977a63-4eac-4fef-8e0e-e345bcb89954",
+      "name": "Edit Fields6 20"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook 2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook 2_2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields6 20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields6 20": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9fa0783a-d733-4cee-9ffa-337b920f85ef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "345b2a2ef7dd4bd5be44a91166c600632d59d747f1432557ef98e63fac5695f0"
+  },
+  "id": "amWJ5FS4s6NblkDJ",
+  "tags": []
+}

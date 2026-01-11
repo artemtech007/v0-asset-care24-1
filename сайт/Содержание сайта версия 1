@@ -1,0 +1,211 @@
+Первая версия сайта:
+
+Главная страница:
+1. Шапка (Header)
+Логотип: Слева вверху находится логотип "AssetCare24" с подзаголовком "MEIN ZUHAUSE".
+Навигационное меню: Горизонтальное меню с пунктами:
+Startseite
+Leistungen
+Jobs
+Kundenmeinungen
+Kontakt
+Действия пользователя (правая часть шапки):
+Иконка телефона (возможно, для быстрого звонка).
+Кнопка Registrieren (белая с зеленой рамкой).
+Кнопка Service anfragen (красная).
+2. Главный баннер (Hero Section)
+Заголовок: "Ihr Zuhause in guten Händen". Слово "guten Händen" выделено зеленым цветом и подчеркнуто красной линией.
+Подзаголовок/Описание: "Wir kümmern uns um alles – vom Glühbirnenwechsel bis zum Schneeräumen. Sagen Sie uns einfach, was erledigt werden muss, und wir kümmern uns darum."
+Основная кнопка призыва к действию (CTA): Красная кнопка с текстом "Jetzt Service anfragen →".
+Гарантии/Преимущества (ниже кнопки): Три пункта с галочками:
+Schnell & Zuverlässig
+Festpreise
+Zufriedenheitsgarantie
+3. Раздел "Was ist AssetCare24?"
+Заголовок: "Was ist AssetCare24?". Под заголовком — красная подчеркивающая линия.
+Содержание: Три карточки-блока, расположенные горизонтально.
+Карточка 1: "Digitales Netzwerk"
+Иконка: Люди/сетевое соединение.
+Описание: "Umfassendes Service- und Koordinationsnetzwerk für die moderne Immobilienwirtschaft".
+Карточка 2: "Vernetzte Plattform"
+Иконка: Два человека.
+Описание: "Verbindet Hausverwalter, Eigentümer, Mieter, Handwerker und Dienstleister in Echtzeit".
+Карточка 3: "Wartung & Pflege"
+Иконка: Ключ/инструмент.
+Описание: "Umfassender Zugriff auf Informationen und Services für Instandhaltung und Immobilienpflege".
+4. Раздел "Für wen ist AssetCare24?"
+Заголовок: "Für wen ist AssetCare24?". Под заголовком — красная подчеркивающая линия.
+Содержание: Четыре карточки-блока, расположенные горизонтально.
+Карточка 1: "Hausverwalter"
+Иконка: Документ/файл.
+Описание: "Optimieren Sie Ihre Verwaltungsprozesse und dokumentieren Sie alle Vorgänge digital und rechtssicher."
+Карточка 2: "Eigentümer"
+Иконка: Дом.
+Описание: "Behalten Sie den Überblick über Ihre Immobilieninvestitionen und alle durchgeführten Maßnahmen."
+Карточка 3: "Mieter"
+Иконка: Человек.
+Описание: "Profitieren Sie von schneller Handwerkervermittlung und transparenter Kommunikation mit allen Beteiligten."
+Карточка 4: "Handwerker"
+Иконка: Молоток.
+Описание: "Erhalten Sie Aufträge effizient und pflegen Sie direkten Kontakt zu Ihren Kunden ohne Umwege."
+5. Раздел "Unsere Leistungen"
+Заголовок: "Unsere Leistungen".
+Подзаголовок: "Von kleinen Aufgaben bis zu größeren Projekten – wir sind für Sie da."
+Содержание: Шесть карточек-услуг, расположенных в две строки по три.
+Строка 1:
+"Birne wechseln": Иконка лампочки. Описание: "Schneller Austausch Ihrer Glühbirnen, damit es bei Ihnen immer hell ist."
+"Tapete erneuern": Иконка ролика с обоями. Описание: "Professionelle Tapezierarbeiten für ein frisches Aussehen Ihrer Räume."
+"Schnee räumen": Иконка снежинки. Описание: "Zuverlässige Schneeräumung, damit Sie sicher durch den Winter kommen."
+Строка 2:
+"Kleinreparaturen": Иконка ключа/инструмента. Описание: "Kleine Reparaturen im Haushalt – schnell und unkompliziert erledigt."
+"Entrümpelung": Иконка мусорного ведра. Описание: "Wir räumen auf und entsorgen, was Sie nicht mehr brauchen."
+"Umzugshilfe": Иконка коробки. Описание: "Unterstützung beim Umzug – vom Tragen bis zum Aufbau der Möbel."
+Кнопка: Внизу раздела — кнопка "Alle Leistungen ansehen →".
+6. Раздел "So starten Sie AssetCare24"
+Заголовок: "So starten Sie AssetCare24". Под заголовком — красная подчеркивающая линия.
+Схема из трех шагов: Горизонтальная схема с тремя круглыми иконками, пронумерованными от 1 до 3.
+Шаг 1: "Registrierung"
+Иконка: Человек с плюсом.
+Описание: "Einfache Online-Registrierung mit wenigen Klicks".
+Шаг 2: "Konfiguration"
+Иконка: Шестеренка.
+Описание: "Anpassung an Ihre spezifischen Anforderungen".
+Шаг 3: "Start"
+Иконка: Ракета.
+Описание: "Sofortige Nutzung aller gewählten Funktionen".
+Блок текста ниже схемы: Описывает простоту перехода на платформу, поддержку команды и гибкие тарифные модели.
+7. Раздел "Ihr Tor zur digitalen Immobilienwirtschaft"
+Заголовок: "Ihr Tor zur digitalen Immobilienwirtschaft". Под заголовком — красная подчеркивающая линия.
+Три блока-статистики (на темно-зеленом фоне):
+Блок 1: "100% Digital"
+Иконка: Монитор.
+Подпись: "Vollständig papierlose Prozesse".
+Блок 2: "24/7 Verfügbarkeit"
+Иконка: Часы.
+Подпись: "Rund um die Uhr Zugriff".
+Блок 3: "60% Effizienzsteigerung"
+Иконка: График роста.
+Подпись: "Durchschnittliche Zeitersparnis".
+Текстовый блок ниже: Общее описание преимуществ платформы: "Revolutionieren Sie Ihre Immobilienverwaltung mit AssetCare24... Sichern Sie sich jetzt Ihren digitalen Vorsprung in der Immobilienbranche!".
+8. Раздел "Sicherheit und Datenschutz"
+Заголовок: "Sicherheit und Datenschutz". Под заголовком — красная подчеркивающая линия.
+Содержание: Три карточки слева и одна большая карточка справа.
+Карточки слева:
+"Zentrale Sicherheit": Иконка щита. Описание: "Nach deutschen und europäischen Standards".
+"Datenverschlüsselung": Иконка замка. Описание: "Schutz aller sensiblen Informationen".
+"DSGVO-Konformität": Иконка документа. Описание: "Vollständige Einhaltung der Datenschutzgesetze".
+Большая карточка справа:
+Заголовок: "Ihre Daten sind sicher". Под ним — "Made in Germany".
+Описание: "Bei AssetCare24 steht die Sicherheit Ihrer Daten an erster Stelle... Alle Datenübertragungen sind Ende-zu-Ende verschlüsselt...".
+9. Раздел "Was unsere Kunden sagen"
+Заголовок: "Was unsere Kunden sagen".
+Подзаголовок: "Zufriedene Kunden sind unser größter Erfolg."
+Содержание: Три карточки с отзывами клиентов.
+Отзыв 1 (Anna M., Berlin): "Die schnelle und zuverlässige Hilfe von AssetCare24 hat meinen Alltag enorm erleichtert! Kann ich nur weiterempfehlen."
+Отзыв 2 (Thomas K., München): "Endlich jemand, der sich um die kleinen Dinge kümmert. Super freundliches Team und faire Preise!"
+Отзыв 3 (Helga S., Hamburg): "Als Seniorin bin ich froh, AssetCare24 gefunden zu haben. Die Mitarbeiter sind geduldig und sehr hilfsbereit."
+10. Футер (Footer)
+Левая колонка:
+Логотип "AssetCare24 MEIN ZUHAUSE".
+Слоган: "Ihr Zuhause – unsere Sorge. Wir kümmern uns um alles, damit Sie sich auf das Wichtige konzentrieren können."
+Колонка "Navigation":
+Список ссылок: Startseite, Leistungen, Jobs, Kundenmeinungen, Kontakt, Registrierung.
+Колонка "Kontakt":
+Email: info@assetcare24.de
+Телефон: +49 30 123 456 789
+Адрес: Musterstraße 123, 10115 Berlin
+Колонка "Schreiben Sie uns":
+Иконка WhatsApp + текст "WhatsApp".
+Иконка Telegram + текст "Telegram".
+
+--------------------------------------------------------
+
+Страница  "Unsere Leistungen" (Полный список услуг)
+Заголовок: "Unsere Leistungen". Белый текст на темно-зеленом фоне.
+Подзаголовок: "Wir bieten umfangreiche Hausmeister- und Handwerker-Dienstleistungen rund um Ihr Zuhause. Professionell, zuverlässig und immer für Sie da."
+Содержание: Сетка из 16 карточек-услуг, расположенных в 5 строках (4, 3, 3, 3, 3).
+Строка 1:
+"Elektrik-Installation": Иконка розетки. Описание: "Fachgerechte elektrische Reparaturen und Installationen für Ihre Sicherheit."
+"Malerarbeiten": Иконка кисти. Описание: "Professionelle Maler- und Tapezierarbeiten für ein frisches Aussehen Ihrer Räume."
+"Klempner-Service": Иконка капли воды. Описание: "Rohrreparaturen, Wartung und Installation – wir lösen Ihre Wasserprobleme."
+Строка 2:
+"Gartenpflege": Иконка дерева/травы. Описание: "Rasenmähen, Heckenschnitt und Pflanzenpflege für Ihren gepflegten Garten."
+"Reinigung": Иконка звездочки/блеска. Описание: "Gründliche Reinigung Ihrer Wohn- und Geschäftsräume – sauber und hygienisch."
+"Schlüsseldienst": Иконка ключа. Описание: "Schnelle Hilfe bei Aussperrung und professioneller Schloss-Austausch."
+Строка 3:
+"Birne wechseln": Иконка лампочки. Описание: "Schneller Austausch Ihrer Glühbirnen, damit es bei Ihnen immer hell ist."
+"Schneeräumung": Иконка снежинки. Описание: "Zuverlässige Schneeräumung, damit Sie sicher durch den Winter kommen."
+"Kleinreparaturen": Иконка ключа/инструмента. Описание: "Kleine Reparaturen im Haushalt – schnell und unkompliziert erledigt."
+Строка 4:
+"Entrümpelung": Иконка мусорного ведра. Описание: "Wir räumen auf und entsorgen, was Sie nicht mehr brauchen."
+"Umzugshilfe": Иконка коробки. Описание: "Unterstützung beim Umzug – vom Tragen bis zum Aufbau der Möbel."
+"Montagearbeiten": Иконка молотка. Описание: "Möbelaufbau, Regale und Bilder aufhängen – wir montieren alles für Sie."
+Строка 5:
+"Hausmeisterservice": Иконка дома. Описание: "Regelmäßige Betreuung Ihrer Immobilie mit allen anfallenden Arbeiten."
+"Sicherheitstechnik": Иконка щита. Описание: "Installation von Rauchmeldern, Bewegungssensoren und Sicherheitsschlössern."
+Блок внизу:
+Заголовок: "Benötigen Sie unsere Hilfe?"
+Текст: "Kontaktieren Sie uns noch heute für eine kostenlose Beratung. Wir sind rund um die Uhr für Sie erreichbar."
+Кнопка: Красная кнопка "Jetzt Service anfragen →".
+
+
+
+--------------------------------------------------------
+
+
+
+Страница :"Arbeiten mit AssetCare24" (Вакансии / Карьера)
+Заголовок: "Arbeiten mit AssetCare24".
+Подзаголовок: "Werde Teil unseres Teams! Wir bieten flexible Arbeitszeiten, stabile Auftragslage und ein freundliches Arbeitsumfeld. Starten Sie Ihre Karriere mit uns."
+Три преимущества (горизонтально):
+"Sicherer Verdienst": Иконка чемодана. Описание: "Regelmäßige Aufträge und faire Bezahlung".
+"Flexible Zeiten": Иконка часов. Описание: "Arbeiten Sie, wann es Ihnen passt".
+"Langfristige Zusammenarbeit": Иконка звезды. Описание: "Wachsen Sie gemeinsam mit uns".
+Раздел "Offene Stellen":
+Заголовок: "Offene Stellen".
+Подзаголовок: "Entdecken Sie unsere aktuellen Stellenangebote und finden Sie Ihren Traumjob".
+Шесть карточек-вакансий:
+"Elektriker (m/w/d)": Описание: "Für kleinere Reparaturen und Installationen im Haushalt. Erfahrung im Umgang mit Elektrotechnik erforderlich." + Локация: Deutschland.
+"Maler (m/w/d)": Описание: "Tapezieren, Streichen und Renovierungsarbeiten in Privatwohnungen. Saubere und zuverlässige Arbeitsweise." + Локация: Deutschland.
+"Klempner (m/w/d)": Описание: "Installation und Reparatur von Sanitäranlagen. Flexibilität und Kundenorientierung erwünscht." + Локация: Deutschland.
+"Gärtner (m/w/d)": Описание: "Gartenpflege, Rasenmähen und saisonale Arbeiten. Erfahrung im Garten- und Landschaftsbau von Vorteil." + Локация: Deutschland.
+"Allround-Handwerker (m/w/d)": Описание: "Vielseitige Tätigkeiten im Haushalt: Möbelmontage, kleine Reparaturen, Wartungsarbeiten." + Локация: Deutschland.
+"Reinigungskraft (m/w/d)": Описание: "Professionelle Reinigung von Wohnungen und Häusern. Gründlichkeit und Zuverlässigkeit sind wichtig." + Локация: Deutschland.
+Раздел "Jetzt bewerben":
+Заголовок: "Jetzt bewerben".
+Текст: "Interessiert? Füllen Sie das Formular aus und wir melden uns bei Ihnen. Keine Registrierung erforderlich."
+Форма обратной связи:
+Поле Name *: Плейсхолдер "Ihr vollständiger Name".
+Поле Telefonnummer *: Плейсхолдер "+49 123 456789".
+Поле Nachricht: Плейсхолдер "Erzählen Sie uns über sich und Ihre Erfahrung...".
+Кнопка: Красная кнопка "Absenden".
+
+
+--------------------------------------------------------
+Страница : "Jetzt registrieren" (Регистрация)
+Заголовок: "Jetzt registrieren".
+Подзаголовок: "Erstellen Sie ein Konto, um AssetCare24 optimal zu nutzen. Die Registrierung dauert nur eine Minute."
+Выбор роли пользователя: Две карточки-кнопки.
+"Kunde": Выбрана (зеленая рамка). Иконка человека. Текст: "Ich suche Hilfe".
+"Handwerker": Не выбрана. Иконка инструмента. Текст: "Ich biete Hilfe an".
+Форма регистрации:
+Поле Name *: Плейсхолдер "Ihr vollständiger Name".
+Поле Telefonnummer *: Плейсхолдер "+49 123 456789".
+Поле Passwort *: Плейсхолдер "Mindestens 6 Zeichen". Есть иконка глаза для показа/скрытия пароля.
+Кнопка: Большая красная кнопка "Registrieren".
+Ссылка под формой: "Schon registriert? Hier anmelden".
+
+--------------------------------------------------------
+
+Страница :  "Schnelle Meldung einer Störung" (Быстрое сообщение о проблеме)
+Заголовок: "Schnelle Meldung einer Störung".
+Подзаголовок: "Füllen Sie das folgende Formular aus, und unser Team kümmert sich um Ihr Anliegen."
+Форма быстрого запроса:
+Поле Name *: Плейсхолдер "Ihr Name".
+Поле Telefonnummer *: Плейсхолдер "0170 1234567".
+Поле Beschreibung des Problems: Плейсхолдер "Beschreiben Sie kurz, was passiert ist...".
+Поле Adresse (optional): Плейсхолдер "Straße, Hausnummer, PLZ, Ort".
+Примечание: * Pflichtfelder (обязательные поля).
+Кнопка: Красная кнопка "Absenden".
+Информация внизу формы: Иконка замка + текст: "Ihre Daten sind bei uns sicher und werden vertraulich behandelt."
+

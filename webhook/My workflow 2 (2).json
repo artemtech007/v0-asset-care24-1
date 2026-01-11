@@ -1,0 +1,41 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Real Estate Inquiry",
+        "formDescription": "Please enter your phone number with country code (example +1)",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Phone"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ba3ab2b6-4756-4771-99e6-24c7c9932234",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        0,
+        -368
+      ],
+      "webhookId": "9f4798d9-1e3a-48fc-9f76-96998bf7c102",
+      "typeVersion": 2.2
+    }
+  ],
+  "pinData": {},
+  "connections": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "7808d08f-4f23-4e15-bc27-68f2f9894f2a",
+  "meta": {
+    "instanceId": "6e75fbfbd1b80d588e3fea682b7f76b7a34d3d3fd6575d31cf7e090a1a489005"
+  },
+  "id": "A1lbrbJTP--r2TeOBxpu6",
+  "tags": []
+}

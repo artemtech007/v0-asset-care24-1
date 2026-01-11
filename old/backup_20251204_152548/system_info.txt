@@ -1,0 +1,56 @@
+=== Информация о системе ===
+Дата создания бэкапа: Thu Dec  4 15:26:30 UTC 2025
+Сервер: r1072942
+ОС: Linux r1072942 5.15.0-122-generic #132-Ubuntu SMP Thu Aug 29 13:45:52 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+Docker version 27.0.3, build 7d4bcd8
+Docker Compose version v5.0.0
+
+=== Статус контейнеров ===
+NAMES                                 STATUS
+n8n-bcogk4gsskcc8880k4kc0ogs          Up 4 minutes (healthy)
+postgresql-bcogk4gsskcc8880k4kc0ogs   Up 5 minutes (healthy)
+coolify-proxy                         Up 19 minutes (healthy)
+coolify-sentinel                      Up 19 minutes (healthy)
+coolify                               Up 19 minutes (healthy)
+coolify-realtime                      Up 19 minutes (healthy)
+coolify-db                            Up 19 minutes (healthy)
+coolify-redis                         Up 19 minutes (healthy)
+
+=== Размеры volumes ===
+Images space usage:
+
+REPOSITORY                            TAG              IMAGE ID       CREATED        SIZE      SHARED SIZE   UNIQUE SIZE   CONTAINERS
+alpine                                latest           7acffee03fe8   20 hours ago   8.44MB    0B            8.442MB       0
+ghcr.io/coollabsio/coolify            4.0.0-beta.452   238846ba0770   5 days ago     382MB     8.322MB       373.2MB       1
+ghcr.io/coollabsio/sentinel           0.0.18           fb0c3479652a   13 days ago    31.3MB    0B            31.28MB       1
+traefik                               v3.6             1e55c25c9dc9   2 weeks ago    185MB     8.322MB       176.9MB       1
+postgres                              16-alpine        216e5ca6a814   2 weeks ago    275MB     8.322MB       267.1MB       1
+postgres                              15-alpine        6df5377b1f74   2 weeks ago    273MB     8.322MB       264.8MB       1
+docker.n8n.io/n8nio/n8n               1.119.2          b4261fdea416   2 weeks ago    978MB     8.322MB       969.5MB       1
+ghcr.io/coollabsio/coolify-realtime   1.0.10           e06af27c75e3   3 weeks ago    621MB     0B            620.8MB       1
+ghcr.io/coollabsio/coolify-helper     1.0.12           5b047e2f85b4   3 weeks ago    298MB     7.831MB       290.2MB       0
+redis                                 7-alpine         13105d2858de   4 weeks ago    41.4MB    7.831MB       33.58MB       1
+
+Containers space usage:
+
+CONTAINER ID   IMAGE                                        COMMAND                  LOCAL VOLUMES   SIZE      CREATED          STATUS                    NAMES
+d4e747faaa9a   docker.n8n.io/n8nio/n8n:1.119.2              "tini -- /docker-ent…"   1               45.7MB    5 minutes ago    Up 4 minutes (healthy)    n8n-bcogk4gsskcc8880k4kc0ogs
+e6909ebca977   postgres:16-alpine                           "docker-entrypoint.s…"   1               63B       5 minutes ago    Up 5 minutes (healthy)    postgresql-bcogk4gsskcc8880k4kc0ogs
+ec0f5bb1f6e4   traefik:v3.6                                 "/entrypoint.sh --pi…"   0               0B        19 minutes ago   Up 19 minutes (healthy)   coolify-proxy
+bcd02dde7736   ghcr.io/coollabsio/sentinel:0.0.18           "/app/sentinel"          0               0B        19 minutes ago   Up 19 minutes (healthy)   coolify-sentinel
+605ae1f6e97b   ghcr.io/coollabsio/coolify:4.0.0-beta.452    "docker-php-serversi…"   0               5.55MB    19 minutes ago   Up 19 minutes (healthy)   coolify
+a5f462d47efd   ghcr.io/coollabsio/coolify-realtime:1.0.10   "/bin/sh /soketi-ent…"   0               2B        20 minutes ago   Up 19 minutes (healthy)   coolify-realtime
+69c2d02aeae5   postgres:15-alpine                           "docker-entrypoint.s…"   1               63B       20 minutes ago   Up 19 minutes (healthy)   coolify-db
+ff5d52d5f12f   redis:7-alpine                               "docker-entrypoint.s…"   1               0B        20 minutes ago   Up 19 minutes (healthy)   coolify-redis
+
+Local Volumes space usage:
+
+VOLUME NAME                                LINKS     SIZE
+bcogk4gsskcc8880k4kc0ogs_postgresql-data   1         50.74MB
+bcogk4gsskcc8880k4kc0ogs_n8n-data          1         128B
+coolify-db                                 1         70.7MB
+coolify-redis                              1         656.8kB
+
+Build cache usage: 0B
+
+CACHE ID   CACHE TYPE   SIZE      CREATED   LAST USED   USAGE     SHARED

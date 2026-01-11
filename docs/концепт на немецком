@@ -1,0 +1,407 @@
+Ich stelle Dir jetzt ein vollständiges, strukturiertes Gesamtkonzept für AssetCare24 zusammen – ausschließlich auf Basis dieses Chats, mit allen genannten Funktionen und mit einem eigenen Abschnitt für offene Fragen/Entscheidungspunkte für die Werbeagentur.
+Keine Empfehlungen, keine Wertungen – nur Anforderungen und offene Punkte.
+
+1. Ziel des Dokuments
+Dieses Dokument beschreibt das Funktions- und Ablaufkonzept der Plattform AssetCare24 aus Sicht:
+    • der Kunden (Mieter, Eigentümer, Hausverwalter),
+    • der Handwerker / Dienstleister (Minijob, Kleingewerbe, Handwerksbetrieb),
+    • sowie der Systemlogik (KI-Assistent, CRM, Dokumentation).
+Es dient als Grundlage für:
+    • Web-Konzept und UX/UI-Design der Werbeagentur,
+    • WhatsApp-Chat-Flow (Chatbot),
+    • spätere technische Umsetzung durch Programmierer.
+
+2. Marke und Bezeichnung
+    • Es existiert ausschließlich die Marke AssetCare24.
+    • Andere Bezeichnungen (z. B. SSK24) werden nicht verwendet.
+
+3. Zielgruppen und Rollen
+3.1 Kundenseite
+    • Mieter (Mietwohnungen, Mietobjekte)
+    • Eigentümer (Wohnung, Haus, Doppelhaushälfte etc.)
+    • Hausverwalter (Verwalter von Mehrfamilienhäusern/Objekten)
+3.2 Dienstleisterseite
+    • Minijob-Handwerker / Nebenjobber (z. B. Rentner, Studenten, berufsfremde, handwerklich begabte Personen)
+    • Kleingewerbetreibende (kleine Firmen, 1–3 Personen)
+    • Professionelle Handwerksbetriebe (klassische Gewerke, Reinigungsfirmen, Gartenbau etc.)
+
+4. QR-Code- und Einstiegs-Konzept
+4.1 QR-Code-Varianten (offen)
+Es ist aktuell nicht festgelegt, ob:
+    1. Ein einziger QR-Code für alle Zielgruppen eingesetzt wird
+ – auf der Startseite werden dann zwei Bereiche angezeigt:
+
+        ◦ „Anfrage stellen“ (Kunden)
+        ◦ „Als Handwerker anmelden“ (Dienstleister)
+    2. Zwei getrennte QR-Codes verwendet werden:
+
+        ◦ QR-Code A: Kundenanfragen
+        ◦ QR-Code B: Handwerkerregistrierung
+Diese Entscheidung ist offen und von der Werbeagentur / Umsetzungspartnern mit zu klären.
+4.2 Orte des QR-Codes
+    • In Mehrfamilienhäusern (Treppenhaus, zentrale Bereiche)
+    • In Wohnungen/Häusern (z. B. im Flur)
+    • Auf Fahrzeugen
+    • In Geschäften (z. B. Bäckerei)
+    • Auf Flyern / Werbemitteln
+
+5. Kanalwahl nach QR-Code-Scan
+Nach dem Scan des QR-Codes (unabhängig ob 1 oder 2 Codes) soll der Nutzer zwischen zwei Kanälen wählen:
+    1. WhatsApp-Chat (wenn der Nutzer WhatsApp nutzt)
+    2. Weboberfläche (Website/Portal)
+Vorgabe:
+    • Beide Kanäle (WhatsApp und Web) sollen funktional denselben Ablauf abbilden.
+    • Wie genau technisch erkannt wird, ob WhatsApp verfügbar ist, ist offen und zu klären.
+    • Mindestens soll eine Zwischenseite bereitgestellt werden, auf der der Nutzer selbst wählen kann:
+        ◦ „Über WhatsApp fortfahren“
+        ◦ „Über Website fortfahren“
+
+6. Kundenbereich: „Anfrage stellen“
+6.1 Einstieg: Bereich auf der Startseite
+Auf der Start- bzw. Landingpage muss ein klar erkennbarer Bereich vorhanden sein:
+    • Button / Kachel: „Anfrage stellen“
+    • Hinweis: Anfrage ist unverbindlich.
+Dieser Bereich richtet sich an:
+    • Mieter
+    • Eigentümer
+    • Hausverwalter
+6.2 Schrittfolge im Kunden-Flow
+Der Ablauf ist auf Web und WhatsApp gleich aufgebaut.
+6.2.1 Schritt 1 – Rollen-Auswahl
+Nutzer wählt seine Rolle:
+    • Mieter
+    • Eigentümer
+    • Hausverwalter
+Zweck: Logische Zuordnung im System.
+ Keine weiteren Pflichtangaben in diesem Schritt.
+6.2.2 Schritt 2 – Anliegen schildern (ohne Kontaktdaten)
+Der Nutzer soll zuerst sein Anliegen mitteilen können, ohne persönliche Daten eingeben zu müssen.
+Mögliche Eingabeformen:
+    • Foto (z. B. verschmutztes Treppenhaus, Defekt, Gartenzustand)
+    • Video (optional)
+    • Sprachnachricht (WhatsApp / Web-Recorder)
+    • Textbeschreibung
+Keine Kontaktdaten in diesem Schritt.
+6.2.3 Schritt 3 – Objekt-/Adressdaten (geplante Funktionalität)
+Zur späteren technischen Bearbeitung werden benötigt:
+    • Postleitzahl (PLZ)
+    • Ort (möglichst automatisch aus PLZ)
+    • Straße und Hausnummer
+    • Optional: Wohnungsnummer / Lage im Haus
+    • Optional: Objektart (Wohnung, Einfamilienhaus, Doppelhaushälfte etc.)
+    • Optional: weitere Angaben (z. B. Wohnfläche, Gartenanteil) – kann später auch durch Handwerker ergänzt werden.
+Vorgabe:
+    • System soll Eingaben plausibilisieren, z. B. Abgleich PLZ–Ort, Straßenname auf Tippfehler prüfen etc.
+6.2.4 Schritt 4 – Kontaktdaten (immer zum Schluss)
+Erst nachdem das Anliegen geschildert wurde, werden Kontaktdaten abgefragt:
+    • Name
+    • Telefonnummer (Pflicht, z. B. für Rückfragen und WhatsApp-Kommunikation)
+    • E-Mail-Adresse (optional, z. B. für Rechnungsversand)
+Reihenfolge ist verbindlich:
+ Erst Anliegen, dann Kontaktdaten.
+6.2.5 Schritt 5 – Abschlussmeldung
+Einfache Bestätigung:
+    • Hinweis, dass die Anfrage eingegangen ist
+    • Hinweis, dass eine Rückmeldung / Terminvorschläge folgen
+
+7. Interner Ablauf nach Kundenanfrage (Funktionsbeschreibung für Programmierer, zur Kenntnis für Agentur)
+Hinweis: Dieser Teil beschreibt Systemlogik / KI-Verhalten. Die Werbeagentur muss diese Funktionalität nicht bauen, sollte sie aber verstehen, um die UX sinnvoll zu strukturieren.
+7.1 Analyse des Anliegens durch KI
+    • Auswertung von Foto / Text / Audio:
+        ◦ Tätigkeitsart (z. B. Reinigung, Garten, Winterdienst, Reparatur)
+        ◦ Dringlichkeit
+    • Zuordnung zu Objekt (über Adresse / QR-Code / Rolle)
+7.2 Auswahl des Handwerkers
+Die KI ermittelt passende Handwerker anhand von:
+    • Einsatzgebiet (PLZ, Radius)
+    • Tätigkeitsprofil (aus Handwerker-Registrierung)
+    • Verfügbarkeit (Kalender, bereits gebuchte Zeiten)
+    • ggf. bereits vorhandene Stamm-Handwerker-Beziehung für dieses Objekt / diesen Kunden
+7.3 Anfrage an Handwerker
+Der ausgewählte Handwerker erhält:
+    • Kurzbeschreibung
+    • Bilder/Videos
+    • Adresse
+    • vorgeschlagene Zeiträume
+Handwerker-Aktion:
+    • „Auftrag annehmen“
+    • „Auftrag ablehnen“
+    • „Anderen Termin vorschlagen“
+7.4 Terminabstimmung
+    • Nimmt der Handwerker an → KI bestätigt Termin beim Kunden (WhatsApp/Web).
+    • Lehnt der Handwerker ab → KI fragt andere Handwerker an.
+    • Schlägt der Handwerker andere Termine vor → KI kommuniziert Terminvarianten mit dem Kunden.
+7.5 Kalender- und Kapazitätslogik
+    • Bei Annahme eines Auftrags blockiert das System den Zeitraum im Handwerkerkalender.
+    • In dieser Zeit dürfen für denselben Handwerker keine weiteren Aufträge angenommen werden.
+    • Wenn ein Kunde einen bereits belegten Zeitraum wählt, informiert KI den Kunden und fragt nach alternativen Zeitfenstern.
+
+8. Ablauf am Einsatztag und Arbeitsbuch
+8.1 Start des Einsatzes
+Beim Kunden vor Ort:
+    • Handwerker macht ein Start-Foto (Beweis des Zustands + Zeitstempel).
+    • Dieses Foto markiert den Beginn der Arbeitszeit.
+8.2 Ende des Einsatzes
+Nach Abschluss der Arbeiten:
+    • Handwerker macht ein Abschluss-Foto (Ergebnis, dokumentierter Zustand).
+    • Dieses Foto markiert den Endzeitpunkt.
+8.3 Zeitermittlung und Arbeitsbuch
+    • Aus Start- und Endzeit wird die Einsatzdauer berechnet.
+    • Alle Einsätze werden im digitalen Arbeitsbuch des Handwerkers gespeichert:
+        ◦ Datum
+        ◦ Kunde / Objekt
+        ◦ Tätigkeit
+        ◦ Start-/Endzeit
+        ◦ Dauer
+        ◦ Fotos vorher/nachher
+        ◦ Besonderheiten
+8.4 Feedback des Handwerkers (Abschlussdialog)
+Nach Abschluss kann die KI den Handwerker automatisch befragen:
+    • War der Kunde einfach / mittel / schwierig?
+    • Wurden alle vereinbarten Arbeiten erledigt?
+    • Gibt es Besonderheiten (z. B. Zugangsprobleme, Zusatzarbeiten)?
+Diese Infos werden im System hinterlegt.
+
+9. Abschluss beim Kunden: Bewertung & Rechnung
+9.1 Bewertung durch den Kunden
+Nach erfolgter Leistung erhält der Kunde eine Nachricht:
+    • Bitte um Bewertung (z. B. 1–5 Sterne)
+    • Bewertungsdimensionen (z. B. Pünktlichkeit, Zuverlässigkeit, Sauberkeit)
+    • Optional: Freitextkommentar
+Vorgabe aus Chat:
+ Die Bewertung soll vor der Rechnungsstellung erfolgen.
+9.2 Rechnungsstellung
+Die KI erstellt auf Basis von:
+    • Arbeitszeit (Start-/Endfoto)
+    • Stundensatz und/oder Pauschalen
+eine Rechnung und stellt sie dem Kunden bereit:
+    • per WhatsApp-Link
+    • per E-Mail
+    • im Kundenbereich (Portal)
+Zahlungsmöglichkeiten (geplant):
+    • PayPal
+    • Kreditkarte
+    • Sofortüberweisung
+    • ggf. weitere Online-Zahlungsarten
+System soll Zahlungseingang prüfen und dokumentieren.
+
+10. Wiederkehrende Leistungen / Abo-Logik
+10.1 Auslöser
+Nach einem ersten erfolgreich abgeschlossenen Auftrag (positives Feedback, Zahlung erfolgt) erhält der Kunde eine Nachricht.
+10.2 Angebot für Wiederholungsleistungen
+KI bietet dem Kunden an:
+    • den gleichen Handwerker / das gleiche Team für regelmäßige Leistungen zu reservieren, z. B.:
+        ◦ 1× pro Woche
+        ◦ alle 2 Wochen
+        ◦ 1× pro Monat
+        ◦ ggf. Saisonleistungen (z. B. Gartenpflege Sommer, Laub Herbst, Winterdienst)
+Optional werden:
+    • Zeiträume
+    • Laufzeit (z. B. 6 oder 12 Monate)
+    • Preis / Rabatt (z. B. 10 % bei längerer Bindung)
+angezeigt.
+10.3 Vertragsbeziehung
+    • Vertragspartner ist AssetCare24 und der Kunde.
+    • Handwerker ist Erfüllungsgehilfe von AssetCare24.
+10.4 Kalender und Priorität
+    • Wiederkehrende Termine werden im Handwerkerkalender eingetragen und blockiert.
+    • Abo-Kunden werden bei Auslastung der Handwerker bevorzugt behandelt.
+
+11. Handwerkerbereich: „Als Handwerker anmelden“
+Dieser Bereich ist entweder:
+    • über einen eigenen QR-Code erreichbar
+ oder
+    • als eigener, klar getrennter Block auf der Startseite (bei Nutzung eines gemeinsamen QR-Codes).
+11.1 Kategorien
+Handwerker wählen eine Kategorie:
+    • Minijob / Nebenjob
+    • Kleingewerbe
+    • Handwerksbetrieb
+11.2 Stammdaten
+Erfassung:
+    • Name
+    • Firmenname (optional)
+    • Anschrift
+    • Telefonnummer
+    • E-Mail
+    • Führerschein vorhanden? (Ja/Nein)
+    • Fahrzeug vorhanden? (Ja/Nein)
+11.3 Tätigkeitsprofil
+Mehrfachauswahl der Leistungen:
+    • Treppenhausreinigung
+    • Gartenpflege
+    • Winterdienst
+    • Kontrollgänge / Sicherheitskontrollen
+    • kleinere Reparaturen
+    • Fensterreinigung
+    • Müllplatzpflege
+    • Hausmeistertätigkeiten
+    • weitere Tätigkeiten (Textfeld / Optionen)
+11.4 Einsatzgebiet und Verfügbarkeit
+    • Einsatzradius (z. B. 5 / 10 / 20 km)
+    • mögliche Einsatzorte (PLZ-Bereiche)
+    • ggf. typische Arbeitszeiten (morgens, abends, Wochenende etc.)
+11.5 Speicherung & Profilverwendung
+    • Das Profil wird für das Matching bei neuen Anfragen genutzt.
+    • Die Zuordnung zu Kunden erfolgt u. a. über PLZ, Tätigkeiten, Verfügbarkeit.
+
+12. Rolle Hausverwalter – Zusatzfunktionen (perspektivisch)
+Die Rolle „Hausverwalter“ kann über den normalen Kunden-Flow Anfragen stellen.
+Zusätzlich sind perspektivisch erweiterte Funktionen geplant:
+    • Objektstammdaten pflegen:
+        ◦ Objektadresse(n)
+        ◦ interne Ansprechpartner
+        ◦ Notfallkontakte
+        ◦ Hinweise zu Zugang/Schlüsseln
+        ◦ bevorzugte Standard-Handwerker (z. B. bestehende Wartungsverträge)
+    • Übersicht aller Vorgänge im Objekt:
+        ◦ Meldungen
+        ◦ Einsätze
+        ◦ Rechnungen
+        ◦ Bewertungen
+Die konkrete Ausgestaltung dieser Verwaltungsoberfläche ist noch offen.
+
+13. CRM, Dokumentation und Historie
+    • Alle Anfragen, Medien (Fotos, Videos, Audios), Nachrichten, Bewertungen und Rechnungen werden im System einem Kunden/Objekt zugeordnet.
+    • Es entsteht eine vollständige Historie pro Objekt / Kunde:
+        ◦ Was wurde wann gemeldet?
+        ◦ Welche Arbeiten wurden durchgeführt?
+        ◦ Welche Handwerker waren im Einsatz?
+        ◦ Welche Rechnungen wurden gestellt und bezahlt?
+Egal ob Kommunikation über:
+    • Webseite/Portal
+    • WhatsApp
+läuft:
+ Die Daten werden zentral im CRM / System gespeichert.
+
+14. Datenschutz / DSGVO
+    • Personenbezogene Daten dürfen nur nach ausdrücklicher Einwilligung verarbeitet werden.
+
+    • Anforderungen:
+
+        ◦ Web: Checkbox zur Bestätigung der Datenschutzerklärung vor Absenden der Daten.
+        ◦ WhatsApp: explizite Textbestätigung (z. B. durch „JA“).
+    • Es ist vorgesehen, folgende Einwilligungsdaten zu protokollieren:
+
+        ◦ Telefonnummer / Kontakt
+        ◦ Zeitpunkt der Einwilligung
+        ◦ Kanal (Web / WhatsApp)
+        ◦ Version der Datenschutzerklärung
+    • Ohne Einwilligung:
+
+        ◦ Keine Verarbeitung / Speicherung personenbezogener Daten
+        ◦ Keine Weitergabe an Handwerker
+
+15. Offene Fragen und Klärungspunkte für Werbeagentur / Entwickler
+    1. Anzahl QR-Codes
+
+        ◦ Ein QR-Code für alle Nutzergruppen
+        ◦ oder getrennte QR-Codes für Kunden und Handwerker?
+    2. Einstiegsseite nach QR-Code
+
+        ◦ Konkrete Ausgestaltung der Seite, auf der WhatsApp/Web gewählt wird.
+        ◦ Ob und wie eine automatische Weiterleitung zu WhatsApp geprüft/versucht wird.
+    3. Gestaltung der gemeinsamen Startseite (bei einem QR-Code)
+
+        ◦ Visuelle Trennung der Bereiche „Anfrage stellen“ und „Als Handwerker anmelden“.
+        ◦ Reihenfolge, Priorisierung und optische Gewichtung.
+    4. Umfang der ersten Version (MVP)
+
+        ◦ Welche Funktionen werden in Version 1 umgesetzt (z. B. nur Kundenanfrage + einfache Handwerkerregistrierung)?
+        ◦ Welche Teile (Abo, erweitertes Hausverwalter-Portal, umfangreiches Arbeitsbuch) kommen später?
+    5. Gestaltung der Medien-Uploads
+
+        ◦ Konkretes Handling von Fotos / Videos / Sprachnachrichten im Web-Frontend.
+        ◦ Größenbegrenzungen, Formate, Anzahl.
+    6. Adressvalidierung
+
+        ◦ Technische Umsetzung der Adressprüfung (PLZ–Ort–Straße).
+        ◦ Nutzung externer Dienste oder einfacher Prüf-Logik.
+    7. Hausverwalter-Verwaltungsoberfläche
+
+        ◦ Wann und wie werden erweiterte Verwaltungsfunktionen (Objektlisten, Stammdaten) umgesetzt?
+        ◦ Eigener Login-Bereich oder Erweiterung des Kundenbereichs?
+    8. Gestaltung der Chat-Dialoge im Detail
+
+        ◦ Konkrete Formulierungen der Bot-Nachrichten (Tonfall, Länge, Struktur).
+        ◦ Mehrsprachigkeit (z. B. später).
+    9. Darstellung der Historie für Kunden
+
+        ◦ Wie sieht die Übersicht über vergangene Aufträge und Rechnungen im Frontend aus?
+        ◦ Reine Listenansicht oder Zeitachse etc.?
+
+Alles klar.
+ Ich formuliere jetzt eine absolut klare, kurze, übersichtliche und leicht verständliche Version, exakt so, wie Du sie 1:1 an die Werbeagentur weitergeben kannst.
+Kein Fachtext, keine Details, nur klar, verständlich, umsetzbar.
+
+Ergänzung 
+🟦 ASSETCARE24 – Fahrzeugpool (Kurzkonzept für die Werbeagentur)
+klar – einfach – vollständig
+
+1. Fahrzeugpool
+AssetCare24 verfügt später über einen Fahrzeugpool (kleine Service-Fahrzeuge).
+ Diese Fahrzeuge sollen über das System Handwerkern zugewiesen werden können.
+
+2. Einfache Zuordnung
+Die Software muss später ermöglichen:
+    • Fahrzeuge per Klick einem Handwerker zuzuweisen
+    • oder automatisch zuzuweisen, je nachdem:
+        ◦ welcher Handwerker am nächsten beim Fahrzeug ist,
+        ◦ welches Fahrzeug am passenden Standort steht.
+
+3. Eigene Fahrzeuge der Handwerker
+Handwerker können:
+    • ihr eigenes Fahrzeug nutzen, wenn kein Transportbedarf besteht
+    • ein AssetCare24-Fahrzeug nutzen, wenn:
+        ◦ Geräte benötigt werden
+        ◦ Material transportiert werden muss
+        ◦ Gartenabfälle oder Müll abgeholt/weggebracht werden müssen
+Welche Variante nötig ist, entscheidet später das System.
+
+4. GPS-Tracking (Pflichtfunktion)
+GPS-Tracking muss integriert werden und funktioniert wie folgt:
+    1. Wenn der Handwerker losfährt, drückt er:
+
+        ◦ „Ich starte“
+ (egal ob mit eigenem oder Firmenfahrzeug)
+    2. Das System startet automatisch GPS-Tracking:
+
+        ◦ zeigt den aktuellen Standort
+        ◦ verfolgt die Fahrt zum Einsatzort
+        ◦ zeigt den Standort während des Einsatzes
+    3. Wenn der Auftrag beendet wird, drückt der Handwerker:
+
+        ◦ „Auftrag abgeschlossen“
+    4. Danach wird das GPS automatisch deaktiviert.
+
+
+5. Zweck des GPS-Systems
+GPS muss ermöglichen:
+    • Übersicht, wo sich der Handwerker aktuell befindet
+    • Kontrolle der Fahrtzeit und Einsatzzeit
+    • Zuordnung zum richtigen Fahrzeug
+    • Dokumentation der Rückkehr (Fahrzeug wieder abgestellt)
+
+6. Anforderungen an die Oberfläche
+Für die Werbeagentur wichtig:
+    • Einfache, übersichtliche Darstellung
+    • Ein Button für „Starten“
+    • Ein Button für „Beenden“
+    • GPS-Anzeige während des gesamten Einsatzes
+    • später: Übersicht „Fahrzeug ist verfügbar / in Nutzung“
+
+7. Zusammenfassung (kurz)
+    • Es gibt einen zentralen Fahrzeugpool.
+    • Fahrzeuge müssen Handwerkern einfach zugewiesen werden können.
+    • Handwerker dürfen auch Privatfahrzeuge nutzen.
+    • GPS-Tracking muss aktiv sein, sobald ein Handwerker losfährt.
+    • GPS schaltet sich aus, wenn der Auftrag beendet wird.
+    • Standortübersicht muss jederzeit sichtbar sein.
+    • Das System muss erkennen, welches Fahrzeug benutzt wird.
+    • Fahrzeugstandort dient zur automatischen Zuweisung.
+
+Wenn Du möchtest, integriere ich diese Kurzversion sofort in das Gesamtkonzept, damit alles in einem Dokument steht – und dann erstelle ich daraus:
+    • eine aktualisierte PDF,
+    • oder eine PowerPoint für die Werbeagentur.
+Sag einfach Bescheid.
+

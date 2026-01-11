@@ -1,0 +1,374 @@
+# Вторая версия сайта AssetCare24
+
+**Дата создания:** 2025-12-12
+**Автор:** AI-анализ на основе требований заказчика
+**Основание:** Доработки версии 2 + текущий функционал этапов 0-3
+**Цель:** Трансформация в комплексную платформу заботы о доме
+
+---
+
+## ГЛАВНАЯ СТРАНИЦА
+
+### 1. Шапка (Header)
+**Логотип:** Увеличенный логотип "AssetCare24" (на 40% больше) с подзаголовком "Ihr intelligenter Haushalts-Organizer"
+
+**Навигационное меню:**
+- Startseite
+- Leistungen
+- Jobs
+- Kundenmeinungen
+- Kontakt
+- Mein Konto (если авторизован)
+
+**Действия пользователя (правая часть):**
+- Иконка WhatsApp (зеленая, для быстрого контакта)
+- Кнопка "Registrieren" (белая с зеленой рамкой)
+- Кнопка "Service anfragen" (красная, крупная)
+
+### 2. Главный баннер (Hero Section)
+**Заголовок:** "Ihr intelligenter Haushalts-Organizer"
+**Подзаголовок:** "Verwalten Sie Ihr Zuhause smart: Von der Lampenreparatur bis zur kompletten Hausbetreuung. Alles digital, transparent und bequem."
+
+**Основные кнопки CTA:**
+- Красная кнопка "JETZT ANFRAGE STELLEN →" (ведет к выбору типа заказчика)
+- Зеленая кнопка "ALS HANDWERKER BEITRETEN" (ведет на регистрацию)
+
+**Преимущества (ниже кнопок):**
+- 🔄 Alles in einem System (Все в одной системе)
+- 👥 Transparente Kommunikation (Прозрачная коммуникация)
+- ⭐ Langfristige Partnerschaften (Долговременные партнерства)
+
+### 3. Раздел "Wie funktioniert AssetCare24?"
+**Заголовок:** "Wie funktioniert AssetCare24?"
+**Описание:** "Unser intelligentes System verbindet Hausverwalter, Eigentümer, Mieter und Handwerker für optimale Zusammenarbeit."
+
+**Четыре карточки процесса:**
+1. **📝 Anfrage stellen** - "Beschreiben Sie Ihr Problem oder laden Sie Fotos hoch"
+2. **🤖 Intelligente Zuordnung** - "KI findet den passenden Handwerker automatisch"
+3. **💬 Direkte Kommunikation** - "Alle Beteiligten kommunizieren transparent"
+4. **✅ Qualitätssicherung** - "Bewertungen und Garantien für beste Ergebnisse"
+
+### 4. Раздел "Für wen ist unsere Plattform?"
+**Заголовок:** "Für wen ist unsere Plattform?"
+
+**Четыре карточки ролей:**
+1. **🏢 Hausverwalter** - "Verwalten Sie mehrere Objekte effizient und transparent"
+2. **🏠 Eigentümer** - "Behalten Sie den Überblick über Ihre Immobilie"
+3. **👤 Mieter** - "Lösen Sie Probleme schnell und einfach"
+4. **🔧 Handwerker** - "Finden Sie stabile Aufträge und bauen Sie Ihre Reputation auf"
+
+### 5. Раздел "Was bieten wir Ihnen?"
+**Заголовок:** "Was bieten wir Ihnen?"
+
+**Две колонки преимуществ:**
+
+**Für Auftraggeber (Заказчики):**
+- ✅ Schnelle Problemlösung (Быстрое решение проблем)
+- ✅ Transparente Preise (Прозрачные цены)
+- ✅ Qualifizierte Handwerker (Квалифицированные мастера)
+- ✅ Digitale Nachverfolgung (Цифровое отслеживание)
+
+**Für Handwerker (Мастера):**
+- 💼 Regelmäßige Aufträge (Регулярные заказы)
+- ⭐ Reputationsaufbau (Построение репутации)
+- 📊 Verdienst-Tracking (Отслеживание доходов)
+- 🤝 Direkter Kundenkontakt (Прямой контакт с клиентами)
+
+### 6. Раздел "Unsere Leistungen"
+**Заголовок:** "Unsere Leistungen"
+**Подзаголовок:** "Wählen Sie Ihren Weg zur Lösung"
+
+**Выбор типа заказчика (горизонтальные карточки):**
+
+**🏢 Hausverwalter**
+*"Für Verwaltung mehrerer Objekte"*
+- Управление общими зонами
+- Координация нескольких специалистов
+- Отчетность по объектам
+- Групповые коммуникации
+
+**🏠 Eigentümer**
+*"Für Ihre eigene Immobilie"*
+- Ремонт и обслуживание
+- Сезонные работы
+- Экстренные ремонты
+- Планирование бюджета
+
+**👤 Mieter**
+*"Für schnelle Hilfe"*
+- Мелкие ремонты
+- Чистка и уборка
+- Техническая поддержка
+- Экстренные вызовы
+
+**Кнопка под каждой карточкой:** "Jetzt anfragen" → ведет к адаптированной форме
+
+### 7. Раздел "Warum AssetCare24?"
+**Заголовок:** "Warum AssetCare24?"
+
+**Три блока преимуществ:**
+1. **🔒 Sicherheit & Vertrauen**
+   - DSGVO-konform
+   - Deutsche Datenschutzstandards
+   - Sichere Kommunikation
+
+2. **⚡ Effizienz & Einfachheit**
+   - Automatische Zuordnung
+   - Digitale Prozesse
+   - Zeitersparnis 60%
+
+3. **🤝 Langfristige Beziehungen**
+   - Bewährte Handwerker
+   - Zufriedene Kunden
+   - Stabile Partnerschaften
+
+### 8. Раздел "Was unsere Nutzer sagen"
+**Заголовок:** "Was unsere Nutzer sagen"
+**Подзаголовок:** "Erfahrungen aus der Praxis"
+
+**Обновленные отзывы:**
+1. **Anna M., Hausverwalterin, Berlin:**
+   "AssetCare24 hat meine Arbeit komplett verändert. Alle Objekte übersichtlich, Kommunikation transparent, Handwerker zuverlässig. Endlich Ordnung in der Hausverwaltung!"
+
+2. **Thomas K., Eigentümer, München:**
+   "Als Hausbesitzer schätze ich die Übersichtlichkeit. Von der kleinen Reparatur bis zur Gartenpflege - alles organisiert und nachvollziehbar."
+
+3. **Maria S., Mieterin, Hamburg:**
+   "Super einfach! Foto gemacht, Problem beschrieben - und schon kommt der Handwerker. Kein Stress mehr mit Wohnungsschäden."
+
+4. **Michael R., Elektriker, Köln:**
+   "Durch AssetCare24 habe ich stabile Kundschaft gefunden. Die Plattform macht alles transparent und die Kunden sind zufrieden."
+
+### 9. Футер (Footer)
+**Логотип и слоган:**
+"AssetCare24 - Ihr intelligenter Haushalts-Organizer"
+"Ihr Zuhause – unsere Sorge. Alles digital, transparent und bequem."
+
+**Колонки:**
+- **Navigation:** Startseite, Leistungen, Jobs, Kundenmeinungen, Kontakt
+- **Für Kunden:** Service anfragen, Registrieren, Hilfe
+- **Für Handwerker:** Registrieren, Jobs, Mein Konto
+- **Kontakt:** info@assetcare24.de | +49 30 123 456 789 | Berlin
+
+---
+
+## СТРАНИЦА "SERVICE ANFRAGEN" (Заявки)
+
+### Выбор типа заказчика
+**Заголовок:** "Wie können wir Ihnen helfen?"
+
+**Три типа форм:**
+
+#### A) Für Hausverwalter
+**Форма с прогресс-баром:**
+```
+Schritt 1/4: Objekt auswählen
+├── Mehrfamilienhaus wählen
+├── Gemeinschaftsbereich angeben
+└── [Foto hochladen]
+
+Schritt 2/4: Problem beschreiben
+├── Kategorie: Treppe, Garten, Technik...
+├── Dringlichkeit: Niedrig/Mittel/Hoch
+└── Detaillierte Beschreibung
+
+Schritt 3/4: Kontaktdaten
+├── Name/Firma
+├── Telefon/Email
+└── Adresse (falls anders)
+
+Schritt 4/4: Registrierung (optional)
+├── Vorteile der Registrierung anzeigen
+├── Einfache Registrierung via WhatsApp/Email
+└── [Registrieren] [Überspringen]
+```
+
+#### B) Für Eigentümer
+**Упрощенная форма:**
+- Выбор типа объекта (Haus/Wohnung)
+- Описание проблемы + фото
+- Контакты
+- Опциональная регистрация
+
+#### C) Für Mieter
+**Самая простая форма:**
+- 2-3 поля: Проблема + фото + контакты
+- Большая кнопка "Jetzt Hilfe holen"
+- Регистрация предлагается после отправки
+
+---
+
+## СТРАНИЦА "ALS HANDWERKER REGISTRIEREN"
+
+### Выбор типа регистрации
+**Две опции:**
+
+#### A) Einzelhandwerker (Независимый мастер)
+- Persönliche Daten
+- Spezialisierungen
+- Arbeitsradius
+- Portfolio-Fotos
+
+#### B) Handwerksunternehmen (Компания)
+- Firmendaten
+- Mitarbeiter hinzufügen
+- Dienstleistungen
+- Firmenportfolio
+
+### Форма с прогресс-баром
+```
+Schritt 1/3: Grunddaten
+├── Name/Firmenname
+├── Kontaktdaten
+└── Spezialisierungen
+
+Schritt 2/3: Verfügbarkeit
+├── Arbeitszeiten
+├── Einsatzgebiet (PLZ)
+└── Verkehrsmittel
+
+Schritt 3/3: Verifizierung
+├── Dokumente uploaden
+├── Qualifikationen
+└── Registrieren
+```
+
+---
+
+## ЛИЧНЫЙ КАБИНЕТ ЗАКАЗЧИКА (этапы 0-3)
+
+### Dashboard
+```
+📊 Mein Überblick
+├── Aktuelle Anfragen (3)
+├── Bevorzugte Handwerker (5)
+├── Ausgaben letzter Monat (€450)
+└── Bewertungen erhalten (4.8★)
+```
+
+### Anfragen verwalten
+- **Aktive:** Status, Handwerker, Fristen
+- **Historie:** Abgeschlossene mit Bewertungen
+- **Entwürfe:** Nicht abgeschickte Anfragen
+
+### Handwerker
+- **Meine Favoriten:** Häufig genutzte
+- **Bewertungen:** Detaillierte Reviews
+- **Neue vorschlagen:** Für zukünftige Arbeiten
+
+### Einstellungen
+- **Profil:** Kontaktdaten, Adressen
+- **Benachrichtigungen:** Email, WhatsApp, Push
+- **Präferenzen:** Zahlungsmethoden, Kommunikation
+
+---
+
+## ЛИЧНЫЙ КАБИНЕТ СПЕЦИАЛИСТА (этапы 0-3)
+
+### Dashboard
+```
+📈 Mein Dashboard
+├── Aktive Aufträge (2)
+├── Heutiger Verdienst (€120)
+├── Durchschnittsbewertung (4.6★)
+└── Verfügbarkeit (frei)
+```
+
+### Aufträge
+- **Offene:** Annehmen/Ablehnen
+- **Aktive:** Kommunikation, Fortschritt
+- **Abgeschlossene:** Bewertungen, Rechnungen
+
+### Finanzen
+- **Verdienst-Tracker:** Nach Monaten
+- **Ausstehende Zahlungen**
+- **Steuerliche Unterlagen**
+
+### Portfolio & Bewertungen
+- **Arbeitsfotos:** Vorher/Nachher
+- **Kundenbewertungen:** Mit Kommentaren
+- **Zertifikate:** Hochgeladen
+
+### Kalender
+- **Verfügbarkeit:** Arbeitszeiten setzen
+- **Termine:** Gebuchte Aufträge
+- **Urlaub:** Planen
+
+---
+
+## ЛИЧНЫЙ КАБИНЕТ КОМПАНИИ (этапы 3)
+
+### Team-Management
+```
+👷 Mitarbeiter (5 aktiv)
+├── Max Müller - Elektriker (4.8★)
+├── Anna Schmidt - Reinigung (4.5★)
+├── Thomas Bauer - Garten (4.7★)
+└── [Neuen Mitarbeiter hinzufügen]
+```
+
+### Unternehmens-Statistik
+- **Gesamtumsatz:** €12,500/Monat
+- **Aufträge gesamt:** 45/Monat
+- **Kundenzufriedenheit:** 4.6★
+- **Mitarbeiter-Performance**
+
+### Auftrags-Koordination
+- **Team-Kalender:** Alle Mitarbeiter
+- **Ressourcen:** Werkzeuge, Fahrzeuge
+- **Großaufträge:** Mehrere Mitarbeiter
+
+---
+
+## ТЕХНИЧЕСКИЕ ОСОБЕННОСТИ
+
+### Адаптивность
+- **Desktop:** Полная навигация, боковые панели
+- **Tablet:** Упрощенная навигация, крупные кнопки
+- **Mobile:** Touch-friendly, камера интеграция
+
+### Производительность
+- **Lazy Loading:** Изображения и контент
+- **PWA:** Установка на домашний экран
+- **Offline:** Базовые функции без интернета
+
+### Безопасность
+- **HTTPS:** Полное шифрование
+- **DSGVO:** Cookie-Banner, Datenlöschung
+- **Auth:** JWT tokens, 2FA опционально
+
+---
+
+## МЕТРИКИ И АНАЛИТИКА
+
+### Основные показатели
+- **Конверсия заявок:** 15% (цель 25%)
+- **Время сессии:** 3:45 мин
+- **Регистрации:** 200/месяц
+- **Активные пользователи:** 80%
+
+### A/B тестирование
+- **Варианты форм:** Классическая vs. шаговая
+- **CTA кнопки:** Красная vs. Зеленая
+- **Фото загрузка:** Drag&drop vs. Камера
+
+---
+
+## ЗАПУСК И ПРОДВИЖЕНИЕ
+
+### Этапы запуска
+1. **Soft Launch:** Закрытое тестирование с 50 пользователями
+2. **Beta:** Открытый доступ с обратной связью
+3. **Full Launch:** Полный запуск с маркетингом
+
+### Маркетинговые каналы
+- **QR-коды:** В подъездах, магазинах, объявлениях
+- **Социальные сети:** Facebook, Instagram для локального таргетинга
+- **Партнеры:** Hausverwaltungen, Immobilienmakler
+- **SEO:** Локальный поиск по услугам
+
+---
+
+**Версия 2.0 готова к разработке!** 🚀
+
+Все изменения направлены на трансформацию сайта из "каталога услуг" в комплексную платформу для управления бытом и недвижимостью.
