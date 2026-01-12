@@ -17,7 +17,6 @@ import {
   Car,
   Award,
   FileText,
-  Upload,
   X,
   Zap,
   Droplets,
@@ -27,6 +26,7 @@ import {
   ShieldCheck,
   Hammer,
   ArrowRight,
+  MessageCircle,
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -69,7 +69,6 @@ export function RegistrierungForm() {
     hasVehicle: true,
     experience: "",
     qualifications: "",
-    documents: [] as File[],
     agreeTerms: false,
     agreeDataProcessing: false,
   })
@@ -160,8 +159,13 @@ export function RegistrierungForm() {
     await sendToWebhook('https://assetcare24.org/webhook-test/d509d181-13ab-4c34-b192-4b8994ec9e49', webhookData)
 
     setIsSubmitting(false)
-    // Show verification popup instead of redirecting to dashboard
-    setShowVerification(true)
+
+    // Open WhatsApp with verification message
+    const whatsappUrl = "https://wa.me/4915510415655?text=Registrierung%20abschließen"
+    window.open(whatsappUrl, "_blank")
+
+    // Redirect to home page after successful registration
+    router.push("/")
   }
 
   const toggleSpecialization = (id: string) => {
@@ -193,21 +197,6 @@ export function RegistrierungForm() {
     }))
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setHandwerkerData((prev) => ({
-        ...prev,
-        documents: [...prev.documents, ...Array.from(e.target.files!)],
-      }))
-    }
-  }
-
-  const removeFile = (index: number) => {
-    setHandwerkerData((prev) => ({
-      ...prev,
-      documents: prev.documents.filter((_, i) => i !== index),
-    }))
-  }
 
 
 
@@ -582,37 +571,6 @@ export function RegistrierungForm() {
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-3">Dokumente hochladen</label>
-        <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors dark:bg-[#0f1512]">
-          <input
-            type="file"
-            multiple
-            onChange={handleFileUpload}
-            className="hidden"
-            id="file-upload"
-            accept=".pdf,.jpg,.jpeg,.png"
-          />
-          <label htmlFor="file-upload" className="cursor-pointer">
-            <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Klicken oder Dateien hierher ziehen</p>
-            <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG (max. 5MB)</p>
-          </label>
-        </div>
-        {handwerkerData.documents.length > 0 && (
-          <div className="mt-3 space-y-2">
-            {handwerkerData.documents.map((file, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <span className="text-sm text-foreground truncate">{file.name}</span>
-                <button type="button" onClick={() => removeFile(index)} className="text-accent hover:text-accent/80">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       <div className="space-y-3 pt-4 border-t border-border">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
@@ -652,6 +610,13 @@ export function RegistrierungForm() {
           </span>
         </label>
         {errors.agreeDataProcessing && <p className="text-red-500 text-sm">{errors.agreeDataProcessing}</p>}
+      </div>
+
+      {/* WhatsApp verification instruction */}
+      <div className="mt-6 p-4 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/20">
+        <p className="text-sm text-muted-foreground text-center">
+          Schreiben Sie uns in WhatsApp "Registrierung abschließen".
+        </p>
       </div>
     </div>
   )
@@ -716,7 +681,10 @@ export function RegistrierungForm() {
                 Registrierung läuft...
               </>
             ) : (
-              "Registrierung abschließen"
+              <>
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Registrierung abschließen in WhatsApp
+              </>
             )}
           </button>
         )}
@@ -724,157 +692,22 @@ export function RegistrierungForm() {
     </div>
   )
 
-  // Registration type selection
-  if (!handwerkerType) {
-    return (
-      <div className="bg-card dark:bg-[#1a2420] rounded-2xl shadow-lg p-8">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Registrierungsart wählen:</h3>
-
-          <button
-            type="button"
-            onClick={() => setHandwerkerType("einzelhandwerker")}
-            className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-              handwerkerType === "einzelhandwerker"
-                ? "border-primary bg-primary/5 dark:bg-primary/10"
-                : "border-border hover:border-primary/50 dark:bg-[#0f1512]"
-            }`}
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                  handwerkerType === "einzelhandwerker" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-                }`}
-              >
-                <User className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-foreground">Einzelhandwerker</h4>
-                <p className="text-sm text-muted-foreground mt-1">Selbstständiger Handwerker ohne Firma</p>
-              </div>
-              {handwerkerType === "einzelhandwerker" && <CheckCircle className="w-6 h-6 text-primary" />}
-            </div>
-          </button>
-
-          <button
-            type="button"
-            disabled
-            className="w-full p-6 rounded-xl border-2 border-border bg-muted/50 dark:bg-[#0f1512]/50 cursor-not-allowed text-left opacity-60"
-          >
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-muted text-muted-foreground flex items-center justify-center">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-muted-foreground">Handwerksunternehmen</h4>
-                  <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
-                    Demnächst
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">Registriertes Unternehmen mit Mitarbeitern</p>
-              </div>
-            </div>
-          </button>
-        </div>
-
-        <p className="text-center text-muted-foreground mt-6">
-          Schon registriert?{" "}
-          <Link href="/anmelden" className="text-primary font-semibold hover:underline">
-            Hier anmelden
-          </Link>
-        </p>
-      </div>
-    )
-  }
-
+  // Main render logic
   return (
-    <div className="w-full">
-      <div className="bg-card dark:bg-[#1a2420] rounded-2xl shadow-lg p-8">
-        {/* Back button */}
-        <button
-          type="button"
-          onClick={() => {
-            if (step > 1) {
-              setStep(step - 1)
-            } else {
-              setHandwerkerType(null)
-            }
-          }}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
-        >
-          <ArrowRight className="w-4 h-4 rotate-180" />
-          <span>{step > 1 ? "Zurück" : "Zurück zur Auswahl"}</span>
-        </button>
+    <>
+      {handwerkerType ? renderHandwerkerForm() : renderHandwerkerTypeSelection()}
 
-        {renderProgressBar()}
-
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-foreground">
-            {step === 1 && "Grunddaten"}
-            {step === 2 && "Verfügbarkeit"}
-            {step === 3 && "Verifizierung"}
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            {step === 1 && "Geben Sie Ihre grundlegenden Informationen ein"}
-            {step === 2 && "Legen Sie Ihre Arbeitszeiten und Servicegebiet fest"}
-            {step === 3 && "Bestätigen Sie Ihre Qualifikationen"}
-          </p>
-        </div>
-
-        {step === 1 && renderHandwerkerStep1()}
-        {step === 2 && renderHandwerkerStep2()}
-        {step === 3 && renderHandwerkerStep3()}
-
-        <div className="flex gap-4 mt-8">
-          {step < 3 ? (
-            <button
-              type="button"
-              onClick={handleHandwerkerNext}
-              className="flex-1 bg-primary text-white font-semibold py-4 rounded-full hover:bg-primary/90 transition-all"
-            >
-              Weiter
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleHandwerkerSubmit}
-              disabled={isSubmitting}
-              className="flex-1 bg-accent text-white font-semibold py-4 rounded-full hover:bg-accent/90 transition-all disabled:opacity-70 flex items-center justify-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Registrierung läuft...
-                </>
-              ) : (
-                "Registrierung abschließen"
-              )}
-            </button>
-          )}
-        </div>
-
-        <p className="text-center text-muted-foreground mt-6">
-          Schon registriert?{" "}
-          <Link href="/anmelden" className="text-primary font-semibold hover:underline">
-            Hier anmelden
-          </Link>
-        </p>
-      </div>
-
-      {/* Verification Popup */}
+      {/* Popup components outside the main content */}
       <VerificationPopup
         isOpen={showVerification}
         onClose={() => setShowVerification(false)}
         onVerify={handleVerificationSuccess}
-        contactMethod="whatsapp"
       />
 
-      {/* Success Popup */}
       <SuccessPopup
         isOpen={showSuccess}
         onClose={handleSuccessClose}
       />
-    </div>
+    </>
   )
 }

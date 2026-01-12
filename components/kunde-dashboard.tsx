@@ -308,7 +308,6 @@ export function KundeDashboard() {
         isOpen={showVerification}
         onClose={() => setShowVerification(false)}
         onVerify={handleVerificationComplete}
-        contactMethod="whatsapp"
       />
 
       {!isVerified && (
