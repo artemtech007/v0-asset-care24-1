@@ -1,8 +1,9 @@
 # UTM Analytics Standard - AssetCare24
 
-**Версия:** 1.0
+**Версия:** 1.1
 **Дата:** 12 января 2026 г.
 **Автор:** AI Assistant
+**Изменения:** Добавлен опциональный параметр opt1 для дополнительной классификации
 
 ## 🎯 Обзор
 
@@ -18,8 +19,10 @@
 
 ### Базовый формат
 ```
-utm_source={source}&utm_medium={medium}&utm_campaign={campaign}&utm_content={content}&utm_term={term}
+utm_source={source}&utm_medium={medium}&utm_campaign={campaign}&utm_content={content}&utm_term={term}&opt1={option1}
 ```
+
+**Примечание:** Параметр `opt1` является опциональным и используется для дополнительной классификации (например, номер контракта, ID объекта и т.д.). Если не используется, устанавливается значение `base`.
 
 ### Определения параметров
 
@@ -74,6 +77,14 @@ utm_source={source}&utm_medium={medium}&utm_campaign={campaign}&utm_content={con
 - Используется для отслеживания поисковых запросов
 - Для платной рекламы: ключевые слова кампании
 - Для органики: поисковые запросы
+
+#### opt1 (Опциональный параметр)
+- **base** - Значение по умолчанию (если параметр не используется)
+- **contract_123** - Номер контракта для контрактных клиентов
+- **building_a** - Идентификатор объекта/здания
+- **tenant_456** - ID арендатора для будущих функций
+- **company_xyz** - Код компании для корпоративных клиентов
+- Может содержать любой идентификатор для дополнительной классификации
 
 ---
 
@@ -155,45 +166,48 @@ switch(utm_source) {
 #### Клиентские заявки:
 ```
 # Главная страница - основная кнопка
-utm_source=web&utm_medium=kunde&utm_campaign=main_page&utm_content=button_primary
+utm_source=web&utm_medium=kunde&utm_campaign=main_page&utm_content=button_primary&opt1=base
 
 # Страница услуг - WhatsApp кнопка
-utm_source=web&utm_medium=kunde&utm_campaign=services_page&utm_content=whatsapp_button
+utm_source=web&utm_medium=kunde&utm_campaign=services_page&utm_content=whatsapp_button&opt1=base
 
 # QR код на доме №1
-utm_source=qr&utm_medium=kunde&utm_campaign=qr_contract&utm_content=building_1
+utm_source=qr&utm_medium=kunde&utm_campaign=qr_contract&utm_content=building_1&opt1=contract_001
+
+# Контрактный клиент - дом №5, контракт №123
+utm_source=qr&utm_medium=kunde&utm_campaign=qr_contract&utm_content=building_5&opt1=contract_123
 ```
 
 #### Регистрация мастеров:
 ```
 # Кнопка "ALS HANDWERKER BEITRETEN"
-utm_source=web&utm_medium=master&utm_campaign=master_reg&utm_content=hero_button
+utm_source=web&utm_medium=master&utm_campaign=master_reg&utm_content=hero_button&opt1=base
 
 # Финальная кнопка регистрации
-utm_source=web&utm_medium=master&utm_campaign=master_reg&utm_content=registration_complete
+utm_source=web&utm_medium=master&utm_campaign=master_reg&utm_content=registration_complete&opt1=base
 ```
 
 ### Будущие точки входа (v2.0)
 
 #### Клиенты - разные типы:
 ```
-# Съемщик через портал арендаторов
-utm_source=web&utm_medium=tenant&utm_campaign=tenant_portal&utm_content=service_request
+# Съемщик через портал арендаторов (квартира №15)
+utm_source=web&utm_medium=tenant&utm_campaign=tenant_portal&utm_content=service_request&opt1=apartment_15
 
-# Собственник через личный кабинет
-utm_source=web&utm_medium=owner&utm_campaign=owner_dashboard&utm_content=emergency_repair
+# Собственник через личный кабинет (дом №3)
+utm_source=web&utm_medium=owner&utm_campaign=owner_dashboard&utm_content=emergency_repair&opt1=building_3
 
-# Управляющая компания через API
-utm_source=web&utm_medium=manager&utm_campaign=manager_api&utm_content=bulk_request
+# Управляющая компания через API (комплекс А)
+utm_source=web&utm_medium=manager&utm_campaign=manager_api&utm_content=bulk_request&opt1=complex_a
 ```
 
 #### Мастера - разные типы:
 ```
-# Регистрация компании
-utm_source=web&utm_medium=company&utm_campaign=master_reg&utm_content=company_signup
+# Регистрация компании (ООО "РемонтСервис")
+utm_source=web&utm_medium=company&utm_campaign=master_reg&utm_content=company_signup&opt1=company_remontservice
 
-# Подработка для фрилансера
-utm_source=web&utm_medium=freelancer&utm_campaign=master_reg&utm_content=part_time_offer
+# Подработка для фрилансера (электрик Иван)
+utm_source=web&utm_medium=freelancer&utm_campaign=master_reg&utm_content=part_time_offer&opt1=electrician_ivan
 ```
 
 ---
@@ -210,11 +224,16 @@ interface UTMParams {
   campaign: string;
   content?: string;
   term?: string;
+  opt1?: string;
 }
 
 function generateWhatsAppLink(phone: string, message: string, utm: UTMParams): string {
   const baseUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-  const utmString = Object.entries(utm)
+
+  // Устанавливаем значение по умолчанию для opt1
+  const utmWithDefaults = { opt1: 'base', ...utm };
+
+  const utmString = Object.entries(utmWithDefaults)
     .filter(([_, value]) => value)
     .map(([key, value]) => `utm_${key}=${encodeURIComponent(value)}`)
     .join('&');
@@ -249,7 +268,8 @@ function parseUTMFromMessage(message) {
     medium: params.get('utm_medium'),
     campaign: params.get('utm_campaign'),
     content: params.get('utm_content'),
-    term: params.get('utm_term')
+    term: params.get('utm_term'),
+    opt1: params.get('utm_opt1') || 'base'  // Опциональный параметр с fallback
   };
 }
 
@@ -291,14 +311,23 @@ gtag('event', 'generate_lead', {
   campaign_source: utm.source,
   campaign_medium: utm.medium,
   campaign_name: utm.campaign,
-  campaign_content: utm.content
+  campaign_content: utm.content,
+  custom_parameter_1: utm.opt1  // Дополнительная классификация
 });
 
 // Регистрация мастера
 gtag('event', 'sign_up', {
   method: 'whatsapp_verification',
   user_type: 'master',
-  campaign_source: utm.source
+  campaign_source: utm.source,
+  custom_parameter_1: utm.opt1
+});
+
+// Контрактные метрики (для будущих функций)
+gtag('event', 'contract_interaction', {
+  contract_id: utm.opt1,
+  interaction_type: utm.campaign,
+  source: utm.source
 });
 ```
 

@@ -73,6 +73,7 @@
 Как работать с конкретными инструментами в рамках проекта.
 
 *   [how_wa_bot_create.md](./how_wa_bot_create.md) — Как создать и настроить WhatsApp бота через Twilio (отличия от Telegram).
+*   [utm_analytics_standard.md](./utm_analytics_standard.md) — Стандарт UTM-меток для аналитики и маршрутизации заявок (v1.1 с opt1 параметром).
 
 ---
 
