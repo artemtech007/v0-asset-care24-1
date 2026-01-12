@@ -1,7 +1,8 @@
 -- =====================================================
--- AssetCare24 MVP Database Schema v2.1
+-- AssetCare24 MVP Database Schema v2.1 DEBUG
 -- Separate tables for clients and masters
 -- Requires PostGIS extension for geography types
+-- CHECK constraints removed for easier debugging
 -- =====================================================
 
 -- Enable required extensions
@@ -19,8 +20,8 @@ CREATE TABLE public.clients (
     telegram_id text,                       -- ID в Telegram
     first_name text NOT NULL,
     last_name text NOT NULL,
-    status text DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'blocked')),
-    category text CHECK (category IN ('existing_client', 'new_client', 'unknown')),
+    status text DEFAULT 'active',
+    category text,
     subcategory text,                       -- house_1, complex_a, ad_google
     source text,                            -- qr_code, advertisement, website
     first_contact_at timestamptz DEFAULT now(),
@@ -41,8 +42,8 @@ CREATE TABLE public.masters (
     telegram_id text,                       -- ID в Telegram
     first_name text NOT NULL,
     last_name text NOT NULL,
-    status text DEFAULT 'pending_approval' CHECK (status IN ('pending_approval', 'approved', 'active', 'suspended', 'blocked')),
-    rating numeric(3,2) DEFAULT 0 CHECK (rating >= 0 AND rating <= 5),
+    status text DEFAULT 'pending_approval',
+    rating numeric(3,2) DEFAULT 0,
     completed_jobs integer DEFAULT 0,
     specializations text[],                 -- ['elektrik', 'sanitär', 'maler']
     working_hours jsonb,                    -- {"start": "08:00", "end": "18:00"}
@@ -67,8 +68,8 @@ CREATE TABLE public.user_links (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     client_id text REFERENCES public.clients(id) ON DELETE CASCADE,
     master_id text REFERENCES public.masters(id) ON DELETE CASCADE,
-    link_type text DEFAULT 'same_person' CHECK (link_type IN ('same_person', 'family_member', 'company_employee', 'related')),
-    confidence numeric(3,2) DEFAULT 1.0 CHECK (confidence >= 0 AND confidence <= 1.0),
+    link_type text DEFAULT 'same_person',
+    confidence numeric(3,2) DEFAULT 1.0,
     linked_by text DEFAULT 'system',
     linked_at timestamptz DEFAULT now(),
     notes text,
@@ -86,7 +87,7 @@ CREATE TABLE public.admin_users (
     telegram_id text,                       -- ID в Telegram
     first_name text NOT NULL,
     last_name text NOT NULL,
-    role text DEFAULT 'admin' CHECK (role IN ('admin', 'manager', 'support')),
+    role text DEFAULT 'admin',
     permissions jsonb DEFAULT '{}'::jsonb,  -- Права доступа
     last_login_at timestamptz,
     created_at timestamptz DEFAULT now()
@@ -117,10 +118,10 @@ CREATE TABLE public.requests (
     address_snapshot text NOT NULL,
     postal_code text,
     master_id text REFERENCES public.masters(id) ON DELETE SET NULL,
-    status text DEFAULT 'new' CHECK (status IN ('new', 'assigned', 'in_progress', 'completed', 'canceled')),
+    status text DEFAULT 'new',
     category text,
     description text,
-    urgency text DEFAULT 'normal' CHECK (urgency IN ('low', 'normal', 'high', 'urgent')),
+    urgency text DEFAULT 'normal',
     admin_comment text,
     assigned_at timestamptz,
     started_at timestamptz,
@@ -135,7 +136,7 @@ CREATE TABLE public.request_media (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     request_id bigint REFERENCES public.requests(id) ON DELETE CASCADE,
     uploaded_by text,  -- Can reference clients.id or masters.id
-    type text CHECK (type IN ('problem_photo', 'problem_audio', 'before_photo', 'after_photo', 'receipt')),
+    type text,
     bucket_path text NOT NULL,
     public_url text,
     file_name text,
@@ -151,7 +152,7 @@ CREATE TABLE public.client_status (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     client_id text REFERENCES public.clients(id) ON DELETE CASCADE,
     session_id uuid DEFAULT gen_random_uuid(),
-    current_state text NOT NULL CHECK (current_state IN ('start', 'waiting_address', 'waiting_category', 'request_created', 'feedback_pending', 'completed')),
+    current_state text NOT NULL,
     state_data jsonb DEFAULT '{}'::jsonb,
     last_message_at timestamptz DEFAULT now(),
     is_active boolean DEFAULT true,
@@ -166,7 +167,7 @@ CREATE TABLE public.master_status (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     master_id text REFERENCES public.masters(id) ON DELETE CASCADE,
     session_id uuid DEFAULT gen_random_uuid(),
-    current_state text NOT NULL CHECK (current_state IN ('start', 'waiting_acceptance', 'job_started', 'job_completed', 'feedback_given', 'idle')),
+    current_state text NOT NULL,
     state_data jsonb DEFAULT '{}'::jsonb,
     last_message_at timestamptz DEFAULT now(),
     is_active boolean DEFAULT true,
@@ -184,7 +185,7 @@ CREATE TABLE public.reviews (
     request_id bigint REFERENCES public.requests(id) ON DELETE CASCADE,
     client_id text REFERENCES public.clients(id) ON DELETE CASCADE,
     master_id text REFERENCES public.masters(id) ON DELETE CASCADE,
-    rating integer CHECK (rating >= 1 AND rating <= 5),
+    rating integer,
     comment text,
     response_from_master text,
     is_public boolean DEFAULT true,
@@ -295,14 +296,6 @@ FOR SELECT USING (id = current_setting('request.jwt.claims', true)::json->>'sub'
 INSERT INTO public.admin_users (id, email, whatsapp_id, first_name, last_name, role)
 VALUES ('aid_web_admin_at_assetcare_dot_org', 'admin@assetcare.org', 'whatsapp_admin_789', 'System', 'Admin', 'admin');
 
--- Sample client status (новая сессия)
-INSERT INTO public.client_status (client_id, current_state, state_data)
-VALUES ('cid_wa_491510416555', 'start', '{"last_action": "greeting_sent"}'::jsonb);
-
--- Sample master status (активный мастер)
-INSERT INTO public.master_status (master_id, current_state, is_on_shift, state_data)
-VALUES ('mid_wa_491510416556', 'idle', true, '{"available_for_jobs": true}'::jsonb);
-
 -- Sample client
 INSERT INTO public.clients (id, phone, whatsapp_id, first_name, last_name, category, subcategory, source)
 VALUES ('cid_wa_491510416555', '+491510416555', 'whatsapp_user_123', 'Иван', 'Петров', 'existing_client', 'house_1', 'qr_code');
@@ -310,6 +303,14 @@ VALUES ('cid_wa_491510416555', '+491510416555', 'whatsapp_user_123', 'Иван',
 -- Sample master
 INSERT INTO public.masters (id, phone, whatsapp_id, first_name, last_name, status, specializations)
 VALUES ('mid_wa_491510416556', '+491510416556', 'whatsapp_master_456', 'Алексей', 'Мастеров', 'active', ARRAY['elektrik', 'sanitär']);
+
+-- Sample client status (новая сессия)
+INSERT INTO public.client_status (client_id, current_state, state_data)
+VALUES ('cid_wa_491510416555', 'start', '{"last_action": "greeting_sent"}'::jsonb);
+
+-- Sample master status (активный мастер)
+INSERT INTO public.master_status (master_id, current_state, is_on_shift, state_data)
+VALUES ('mid_wa_491510416556', 'idle', true, '{"available_for_jobs": true}'::jsonb);
 
 -- =====================================================
 -- END OF SCHEMA
