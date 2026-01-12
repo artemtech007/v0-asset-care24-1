@@ -355,7 +355,6 @@ export function HandwerkerDashboard() {
         isOpen={showVerification}
         onClose={() => setShowVerification(false)}
         onVerify={handleVerificationComplete}
-        contactMethod="email"
       />
 
       {/* Added verification banner */}

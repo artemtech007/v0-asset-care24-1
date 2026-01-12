@@ -422,7 +422,6 @@ export function FirmaDashboard() {
         isOpen={showVerification}
         onClose={() => setShowVerification(false)}
         onVerify={handleVerificationComplete}
-        contactMethod="email"
       />
 
       {!isVerified && (

@@ -17,7 +17,6 @@ import {
   Car,
   Award,
   FileText,
-  Upload,
   X,
   Zap,
   Droplets,
@@ -82,7 +81,6 @@ export function RegistrierungForm() {
     hasVehicle: true,
     experience: "",
     qualifications: "",
-    documents: [] as File[],
     agreeTerms: false,
     agreeDataProcessing: false,
   })
@@ -149,11 +147,13 @@ export function RegistrierungForm() {
     setIsSubmitting(true)
     await new Promise((resolve) => setTimeout(resolve, 1500))
     setIsSubmitting(false)
-    if (handwerkerType === "unternehmen") {
-      router.push("/dashboard/firma")
-    } else {
-      router.push("/dashboard/handwerker")
-    }
+
+    // Open WhatsApp with verification message
+    const whatsappUrl = "https://wa.me/4915510415655?text=Registrierung%20abschließen"
+    window.open(whatsappUrl, "_blank")
+
+    // Redirect to home page after successful registration
+    router.push("/")
   }
 
   const toggleSpecialization = (id: string) => {
@@ -174,21 +174,6 @@ export function RegistrierungForm() {
     }))
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setHandwerkerData((prev) => ({
-        ...prev,
-        documents: [...prev.documents, ...Array.from(e.target.files!)],
-      }))
-    }
-  }
-
-  const removeFile = (index: number) => {
-    setHandwerkerData((prev) => ({
-      ...prev,
-      documents: prev.documents.filter((_, i) => i !== index),
-    }))
-  }
 
   // Role selection component
   const renderRoleSelection = () => (
@@ -895,36 +880,6 @@ export function RegistrierungForm() {
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-3">Dokumente hochladen</label>
-        <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors dark:bg-[#0f1512]">
-          <input
-            type="file"
-            multiple
-            onChange={handleFileUpload}
-            className="hidden"
-            id="file-upload"
-            accept=".pdf,.jpg,.jpeg,.png"
-          />
-          <label htmlFor="file-upload" className="cursor-pointer">
-            <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Klicken oder Dateien hierher ziehen</p>
-            <p className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG (max. 5MB)</p>
-          </label>
-        </div>
-        {handwerkerData.documents.length > 0 && (
-          <div className="mt-3 space-y-2">
-            {handwerkerData.documents.map((file, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <span className="text-sm text-foreground truncate">{file.name}</span>
-                <button type="button" onClick={() => removeFile(index)} className="text-accent hover:text-accent/80">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       <div className="space-y-3 pt-4 border-t border-border">
         <label className="flex items-start gap-3 cursor-pointer">
@@ -965,6 +920,13 @@ export function RegistrierungForm() {
           </span>
         </label>
         {errors.agreeDataProcessing && <p className="text-red-500 text-sm">{errors.agreeDataProcessing}</p>}
+      </div>
+
+      {/* WhatsApp verification instruction */}
+      <div className="mt-6 p-4 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/20">
+        <p className="text-sm text-muted-foreground text-center">
+          Schreiben Sie uns in WhatsApp "Registrierung abschließen".
+        </p>
       </div>
     </div>
   )
@@ -1029,7 +991,10 @@ export function RegistrierungForm() {
                 Registrierung läuft...
               </>
             ) : (
-              "Registrierung abschließen"
+              <>
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Registrierung abschließen in WhatsApp
+              </>
             )}
           </button>
         )}
