@@ -292,6 +292,8 @@ GROUP BY c.id, c.full_name, c.phone, c.category, c.subcategory;
 
 ## 3. SQL скрипт инициализации (Init Script)
 
+**Готовый файл:** [init_database_v2.1.sql](./init_database_v2.1.sql) - отдельный SQL файл для удобства выполнения.
+
 ### 3.1 Требования к базе данных
 
 **PostgreSQL версии:** 12+ (рекомендуется 15+)
