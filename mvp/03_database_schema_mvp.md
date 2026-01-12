@@ -1,4 +1,4 @@
-# Схема Базы Данных MVP (Supabase / PostgreSQL) v2.0
+# Схема Базы Данных MVP (Supabase / PostgreSQL) v2.1
 
 **Цель:** Архитектура с разделенными таблицами для клиентов и мастеров, поддержка множественных ролей и каналов коммуникации.
 
@@ -292,16 +292,42 @@ GROUP BY c.id, c.full_name, c.phone, c.category, c.subcategory;
 
 ## 3. SQL скрипт инициализации (Init Script)
 
+### 3.1 Требования к базе данных
+
+**PostgreSQL версии:** 12+ (рекомендуется 15+)
+**Расширения:**
+- `uuid-ossp` - для генерации UUID (входит в стандартную поставку PostgreSQL)
+- `postgis` - для географических данных (требует отдельной установки)
+
+#### Установка PostGIS:
+
+**Ubuntu/Debian:**
+```bash
+sudo apt update
+sudo apt install postgresql-15-postgis-3
+```
+
+**Docker:**
+```bash
+# Использовать образ с PostGIS
+docker run --name postgis -e POSTGRES_PASSWORD=mypassword -d postgis/postgis:15-3.4
+```
+
+**Supabase:**
+PostGIS уже установлен и активирован в Supabase.
+
 **Внимание:** Этот скрипт пересоздает всю базу данных. Выполнять только на пустой БД!
 
 ```sql
 -- =====================================================
--- AssetCare24 MVP Database Schema v2.0
+-- AssetCare24 MVP Database Schema v2.1
 -- Separate tables for clients and masters
+-- Requires PostGIS extension for geography types
 -- =====================================================
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- =====================================================
 -- 1. CLIENTS TABLE (Составные ID как PK)
