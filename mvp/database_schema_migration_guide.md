@@ -479,4 +479,52 @@ WHERE grantee = current_user AND table_name = 'masters';
 
 ---
 
+---
+
+## 14. MVP Многозаявочность - Добавление полей
+
+### 14.1 Добавление полей в master_status
+```sql
+-- Активная заявка (для однозаявочности выполнения)
+ALTER TABLE master_status ADD COLUMN current_request_id bigint REFERENCES requests(id);
+
+-- Простая маршрутизация бота
+ALTER TABLE master_status ADD COLUMN state1 varchar(50);
+ALTER TABLE master_status ADD COLUMN state2 varchar(50);
+
+-- Статистика мастера для многозаявочности
+ALTER TABLE master_status ADD COLUMN assigned_jobs_count integer DEFAULT 0;    -- Запланировано
+ALTER TABLE master_status ADD COLUMN max_daily_capacity integer DEFAULT 3;      -- Макс. в день
+ALTER TABLE master_status ADD COLUMN paused_jobs_count integer DEFAULT 0;       -- На паузе
+
+-- Индекс для быстрого поиска активной заявки
+CREATE INDEX idx_master_status_current_request ON master_status(current_request_id);
+```
+
+### 14.2 Добавление полей в requests
+```sql
+-- Планирование даты выполнения
+ALTER TABLE requests ADD COLUMN scheduled_date date;
+
+-- Добавить CHECK constraint для статусов (с paused)
+ALTER TABLE requests ADD CONSTRAINT requests_status_check
+CHECK (status IN ('new', 'assigned', 'in_progress', 'completed', 'canceled', 'paused'));
+```
+
+### 14.3 Инициализация данных
+```sql
+-- Заполнить статистику для существующих мастеров
+UPDATE master_status
+SET assigned_jobs_count = (
+    SELECT COUNT(*) FROM requests
+    WHERE master_id = master_status.master_id AND status = 'assigned'
+),
+paused_jobs_count = (
+    SELECT COUNT(*) FROM requests
+    WHERE master_id = master_status.master_id AND status = 'paused'
+);
+```
+
+---
+
 **Помните:** Любые изменения схемы БД - это **критические операции**. Всегда консультируйтесь с командой и тестируйте изменения перед применением на production!

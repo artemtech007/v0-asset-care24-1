@@ -469,6 +469,12 @@ INSERT INTO master_status (
     is_active,
     rating,
     completed_jobs,
+    current_request_id,
+    state1,
+    state2,
+    assigned_jobs_count,
+    max_daily_capacity,
+    paused_jobs_count,
     created_at
 ) VALUES (
     '{{ $json.body.master_id }}',
@@ -484,6 +490,12 @@ INSERT INTO master_status (
     true,
     0,  -- Начальный рейтинг
     0,  -- Начальное количество работ
+    NULL,  -- Нет активной заявки
+    NULL,  -- state1 для маршрутизации
+    NULL,  -- state2 для доп. логики
+    0,  -- Пока нет запланированных заявок
+    3,  -- Максимум 3 заявки в день по умолчанию
+    0,  -- Нет заявок на паузе
     '{{ $json.body.timestamp }}'
 ) ON CONFLICT (master_id) DO UPDATE SET
     current_state = EXCLUDED.current_state,

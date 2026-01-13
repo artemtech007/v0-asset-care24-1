@@ -101,15 +101,27 @@
 | `address_snapshot` | text | NOT NULL | Копия адреса для истории |
 | `postal_code` | text | | ZIP-код места выполнения |
 | `master_id` | text | FK -> `masters.id` (nullable) | Кто выполняет (Мастер) |
-| `status` | text | default 'new' | Статус: `new`, `assigned`, `in_progress`, `completed`, `canceled` |
+| `status` | text | default 'new' | Статус: `new`, `assigned`, `in_progress`, `completed`, `canceled`, `paused` |
 | `category` | text | | Категория проблемы (Сантехника, Электрика) |
 | `description` | text | | Текст описания проблемы |
 | `urgency` | text | default 'normal' | Срочность: `low`, `normal`, `high`, `urgent` |
 | `admin_comment` | text | | Внутренние заметки администратора |
 | `assigned_at` | timestamptz | | Дата назначения мастера |
 | `started_at` | timestamptz | | Дата начала работ |
+| `scheduled_date` | date | | Запланированная дата выполнения |
 | `created_at` | timestamptz | default `now()` | Время создания заявки |
 | `completed_at` | timestamptz | | Время завершения |
+
+**Статусы для многозаявочности:**
+- `new` - новая заявка (ждет назначения мастера)
+- `assigned` - назначена мастеру (принята, ждет выполнения) **[МНОГОЗАЯВОЧНОСТЬ]**
+- `in_progress` - в работе (активно выполняется) **[ТОЛЬКО ОДНА]**
+- `paused` - приостановлена (ждет материалов/инструментов)
+- `completed` - завершена
+- `canceled` - отменена
+
+**Планирование работ:**
+- `scheduled_date` - запланированная дата выполнения работы
 
 ### 1.7 `request_media` (Медиа файлы)
 Связка файлов (в MinIO) с заявками.
@@ -142,8 +154,8 @@
 | `created_at` | timestamptz | default `now()` | Дата создания сессии |
 | `updated_at` | timestamptz | default `now()` | Дата обновления |
 
-### 1.9 `master_status` (Статусы и метрики мастеров)
-Машина состояний для диалогов с мастерами + метрики производительности для маршрутизации заявок.
+### 1.9 `master_status` (Статусы, метрики и управление работой мастеров)
+Машина состояний для диалогов с мастерами + метрики производительности + управление многозаявочностью.
 
 | Column | Type | Constraints | Описание |
 | :--- | :--- | :--- | :--- |
@@ -158,6 +170,12 @@
 | `is_on_shift` | boolean | default false | На смене ли мастер |
 | `rating` | numeric(3,2) | CHECK (rating >= 0 AND rating <= 5) | Текущий рейтинг мастера |
 | `completed_jobs` | integer | default 0 | Количество завершенных работ |
+| `current_request_id` | bigint | FK -> `requests.id` | ID активной заявки (однозаявочность выполнения) |
+| `state1` | varchar(50) | | Поле маршрутизации бота #1 |
+| `state2` | varchar(50) | | Поле маршрутизации бота #2 |
+| `assigned_jobs_count` | integer | default 0 | Количество запланированных заявок |
+| `max_daily_capacity` | integer | default 3 | Максимум заявок в день |
+| `paused_jobs_count` | integer | default 0 | Количество заявок на паузе |
 | `created_at` | timestamptz | default `now()` | Дата создания сессии |
 | `updated_at` | timestamptz | default `now()` | Дата обновления |
 
@@ -165,6 +183,15 @@
 - **Rating и completed_jobs** хранятся здесь для быстрого доступа при автоматическом назначении заявок
 - **Не нужно JOIN с masters** при фильтрации мастеров по качеству работы
 - **Часто обновляются** после завершения каждой работы
+
+**Управление многозаявочностью:**
+- **current_request_id** - активная заявка (только одна в работе одновременно)
+- **assigned_jobs_count** - запланированные заявки (многозаявочность на сбор)
+- **paused_jobs_count** - приостановленные работы
+- **max_daily_capacity** - лимит одновременных заявок
+
+**Маршрутизация бота:**
+- **state1, state2** - простые поля для управления логикой диалогов
 
 ### 1.10 `master_settings` (Расширенные настройки мастеров)
 Таблица для хранения детальных настроек мастеров: график работы, специализации, зоны обслуживания.
