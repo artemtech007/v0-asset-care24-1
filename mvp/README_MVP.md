@@ -47,6 +47,7 @@
 
 📄 **Документация:**
 *   [03_database_schema_mvp.md](./03_database_schema_mvp.md) — Описание схемы таблиц.
+*   [database_schema_migration_guide.md](./database_schema_migration_guide.md) — **Регламент** безопасных изменений схемы БД.
 *   [init_database_v2.1.sql](./init_database_v2.1.sql) — **Готовый SQL скрипт** для создания БД (v2.1 с PostGIS).
 *   [04_storage_structure.md](./04_storage_structure.md) — Структура папок в S3 (MinIO).
 
