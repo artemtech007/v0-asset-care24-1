@@ -41,16 +41,6 @@
 | `status` | text | default 'pending_approval' | Статус: `pending_approval`, `approved`, `active`, `suspended`, `blocked` |
 | `rating` | numeric(3,2) | default 0 | Рейтинг от 0 до 5 |
 | `completed_jobs` | integer | default 0 | Количество выполненных работ |
-| `specializations` | text[] | | Массив специализаций: ['elektrik', 'sanitär', 'maler'] |
-| `working_hours` | jsonb | | График работы: {"start": "08:00", "end": "18:00"} |
-| `working_days` | text[] | | Рабочие дни: ['mo', 'di', 'mi', 'do', 'fr'] |
-| `service_area` | text | | Зона обслуживания (текст) |
-| `has_vehicle` | boolean | default false | Наличие транспорта |
-| `experience_years` | integer | | Стаж работы в годах |
-| `qualifications` | text | | Квалификация и сертификаты |
-| `documents_verified` | boolean | default false | Документы проверены |
-| `approval_date` | timestamptz | | Дата одобрения администратором |
-| `admin_comment` | text | | Комментарий администратора |
 | `last_activity_at` | timestamptz | default `now()` | Последняя активность |
 | `meta_data` | jsonb | default '{}' | Дополнительные данные |
 | `created_at` | timestamptz | default `now()` | Дата создания профиля |
@@ -178,7 +168,18 @@
 | :--- | :--- | :--- | :--- |
 | `id` | uuid | PK, default `gen_random_uuid()` | Уникальный ID настройки |
 | `master_id` | text | FK -> `masters.id`, UNIQUE | Ссылка на мастера |
+
+**Профиль мастера (данные, перенесенные из masters):**
+| `has_vehicle` | boolean | default false | Наличие транспорта |
+| `experience_years` | integer | | Стаж работы в годах |
+| `qualifications` | text | | Квалификация и сертификаты |
+| `documents_verified` | boolean | default false | Документы проверены |
+| `approval_date` | timestamptz | | Дата одобрения администратором |
+| `admin_comment` | text | | Комментарий администратора |
+
+**Рабочий график и зона обслуживания:**
 | `service_area` | text | | Зона обслуживания (текст: "10115, 10117") |
+| `working_hours` | jsonb | | Общее время работы (резервная копия) |
 | `work_mo` | boolean | default false | Работает по понедельникам |
 | `work_di` | boolean | default false | Работает по вторникам |
 | `work_mi` | boolean | default false | Работает по средам |
@@ -200,6 +201,7 @@
 | `work_end_sa` | time | | Время окончания работы по субботам |
 | `work_start_so` | time | | Время начала работы по воскресеньям |
 | `work_end_so` | time | | Время окончания работы по воскресеньям |
+| `working_days` | text[] | | Рабочие дни в массиве (для обратной совместимости) |
 | `spec_elektrik` | boolean | default false | Специализация: электрика |
 | `spec_sanitaer` | boolean | default false | Специализация: сантехника |
 | `spec_heizung` | boolean | default false | Специализация: отопление |
@@ -215,8 +217,10 @@
 
 **Особенности:**
 - **Один к одному:** Одна запись на мастера (UNIQUE constraint на master_id)
+- **Полный профиль:** Содержит все расширенные настройки мастера
 - **Гибкий график:** Индивидуальное время работы для каждого дня недели
 - **Булевы поля:** Для быстрой фильтрации по специализациям и рабочим дням
+- **Обратная совместимость:** working_days массив для совместимости со старым кодом
 - **NULL значения:** Для нерабочих дней время может быть NULL
 - **Каскадное удаление:** При удалении мастера удаляются и его настройки
 

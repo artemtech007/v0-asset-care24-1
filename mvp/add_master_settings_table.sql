@@ -1,6 +1,17 @@
 -- =====================================================
 -- Добавление таблицы master_settings в существующую БД
--- Запускать после применения init_database_v2.1.sql
+-- Запускать ПОСЛЕ применения init_database_v2.1.sql
+-- И ПОСЛЕ РУЧНОГО УДАЛЕНИЯ дублирующихся полей из masters таблицы:
+-- ALTER TABLE masters DROP COLUMN specializations,
+--                      DROP COLUMN working_hours,
+--                      DROP COLUMN working_days,
+--                      DROP COLUMN service_area,
+--                      DROP COLUMN has_vehicle,
+--                      DROP COLUMN experience_years,
+--                      DROP COLUMN qualifications,
+--                      DROP COLUMN documents_verified,
+--                      DROP COLUMN approval_date,
+--                      DROP COLUMN admin_comment;
 -- =====================================================
 
 -- Создание таблицы master_settings
@@ -8,8 +19,22 @@ CREATE TABLE IF NOT EXISTS public.master_settings (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     master_id text REFERENCES public.masters(id) ON DELETE CASCADE UNIQUE,
 
+    -- Профиль мастера (данные, перенесенные из masters)
+    has_vehicle boolean DEFAULT false,
+    experience_years integer,
+    qualifications text,
+    documents_verified boolean DEFAULT false,
+    approval_date timestamptz,
+    admin_comment text,
+
     -- Зона обслуживания
     service_area text,
+
+    -- Общее время работы (резервная копия в JSON)
+    working_hours jsonb,
+
+    -- Рабочие дни в массиве (для обратной совместимости)
+    working_days text[],
 
     -- Рабочие дни недели (булевы поля)
     work_mo boolean DEFAULT false,
@@ -80,8 +105,18 @@ SELECT
     m.completed_jobs,
     m.created_at as registered_at,
 
-    -- Настройки графика работы
+    -- Данные из master_settings
+    ms.has_vehicle,
+    ms.experience_years,
+    ms.qualifications,
+    ms.documents_verified,
+    ms.approval_date,
+    ms.admin_comment,
     ms.service_area,
+    ms.working_hours,
+    ms.working_days,
+
+    -- Настройки графика работы
     -- Общее время работы (для совместимости, берем из понедельника)
     ms.work_start_mo as work_start,
     ms.work_end_mo as work_end,
@@ -103,7 +138,9 @@ LEFT JOIN master_settings ms ON m.id = ms.master_id
 LEFT JOIN requests r ON m.id = r.master_id
 LEFT JOIN reviews rv ON r.id = rv.request_id
 GROUP BY m.id, m.first_name, m.last_name, m.phone, m.email, m.status, m.rating, m.completed_jobs, m.created_at,
-         ms.service_area, ms.work_start_mo, ms.work_end_mo,
+         ms.has_vehicle, ms.experience_years, ms.qualifications, ms.documents_verified, ms.approval_date, ms.admin_comment,
+         ms.service_area, ms.working_hours, ms.working_days,
+         ms.work_start_mo, ms.work_end_mo,
          ms.work_mo, ms.work_di, ms.work_mi, ms.work_do, ms.work_fr, ms.work_sa, ms.work_so,
          ms.spec_elektrik, ms.spec_sanitaer, ms.spec_heizung, ms.spec_maler,
          ms.spec_elektriker, ms.spec_klempner, ms.spec_schlosser, ms.spec_garten, ms.spec_reinigung, ms.spec_other;

@@ -335,13 +335,6 @@ INSERT INTO masters (
     whatsapp_id,
     first_name,
     last_name,
-    specializations,
-    working_hours,
-    working_days,
-    service_area,
-    has_vehicle,
-    experience_years,
-    qualifications,
     status,
     created_at,
     last_activity_at
@@ -352,37 +345,51 @@ INSERT INTO masters (
     '{{ $json.body.wa_norm }}',
     '{{ $json.body.vorname }}',
     '{{ $json.body.nachname }}',
-    -- Преобразуем булевы специализации в массив строк для обратной совместимости
-    ARRAY(
-        SELECT CASE
-            WHEN {{ $json.body.spec_elektrik }} THEN 'elektrik'
-            WHEN {{ $json.body.spec_sanitaer }} THEN 'sanitaer'
-            WHEN {{ $json.body.spec_heizung }} THEN 'heizung'
-            WHEN {{ $json.body.spec_maler }} THEN 'maler'
-            WHEN {{ $json.body.spec_elektriker }} THEN 'elektriker'
-            WHEN {{ $json.body.spec_klempner }} THEN 'klempner'
-            WHEN {{ $json.body.spec_schlosser }} THEN 'schlosser'
-            WHEN {{ $json.body.spec_garten }} THEN 'garten'
-            WHEN {{ $json.body.spec_reinigung }} THEN 'reinigung'
-            WHEN {{ $json.body.spec_other }} THEN 'other'
-        END
-        WHERE CASE
-            WHEN {{ $json.body.spec_elektrik }} THEN true
-            WHEN {{ $json.body.spec_sanitaer }} THEN true
-            WHEN {{ $json.body.spec_heizung }} THEN true
-            WHEN {{ $json.body.spec_maler }} THEN true
-            WHEN {{ $json.body.spec_elektriker }} THEN true
-            WHEN {{ $json.body.spec_klempner }} THEN true
-            WHEN {{ $json.body.spec_schlosser }} THEN true
-            WHEN {{ $json.body.spec_garten }} THEN true
-            WHEN {{ $json.body.spec_reinigung }} THEN true
-            WHEN {{ $json.body.spec_other }} THEN true
-            ELSE false
-        END
-    ),
-    -- Working hours в JSON формате
+    'pending_approval',
+    '{{ $json.body.timestamp }}',
+    '{{ $json.body.timestamp }}'
+) ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    last_activity_at = EXCLUDED.last_activity_at;
+```
+
+### 7. PostgreSQL Node (Создание записи в master_settings)
+**Назначение:** Создать расширенные настройки мастера с графиком работы, специализациями и зоной обслуживания.
+
+**Query:**
+```sql
+INSERT INTO master_settings (
+    master_id,
+    -- Профиль мастера
+    has_vehicle,
+    experience_years,
+    qualifications,
+    -- Зона обслуживания и график работы
+    service_area,
+    working_hours,
+    working_days,
+    -- Рабочие дни (булевы поля)
+    work_mo, work_di, work_mi, work_do, work_fr, work_sa, work_so,
+    -- Время работы (используем общее время из формы для всех рабочих дней)
+    work_start_mo, work_end_mo,
+    work_start_di, work_end_di,
+    work_start_mi, work_end_mi,
+    work_start_do, work_end_do,
+    work_start_fr, work_end_fr,
+    work_start_sa, work_end_sa,
+    work_start_so, work_end_so,
+    -- Специализации (булевы поля)
+    spec_elektrik, spec_sanitaer, spec_heizung, spec_maler,
+    spec_elektriker, spec_klempner, spec_schlosser, spec_garten, spec_reinigung, spec_other
+) VALUES (
+    '{{ $json.body.master_id }}',
+    -- Профиль мастера
+    {{ $json.body.hasVehicle }},
+    CASE WHEN '{{ $json.body.experience }}' != '' THEN '{{ $json.body.experience }}'::integer ELSE NULL END,
+    CASE WHEN '{{ $json.body.qualifications }}' != '' THEN '{{ $json.body.qualifications }}' ELSE NULL END,
+    -- Зона обслуживания и график работы
+    '{{ $json.body.serviceArea }}',
     '{{ $json.body.workingHours }}'::jsonb,
-    -- Преобразуем булевы дни в массив строк для обратной совместимости
     ARRAY(
         SELECT CASE
             WHEN {{ $json.body.work_mo }} THEN 'mo'
@@ -404,73 +411,34 @@ INSERT INTO masters (
             ELSE false
         END
     ),
-    '{{ $json.body.serviceArea }}',
-    {{ $json.body.hasVehicle }},
-    -- experience и qualifications могут быть пустыми при регистрации
-    CASE WHEN '{{ $json.body.experience }}' != '' THEN '{{ $json.body.experience }}'::integer ELSE NULL END,
-    CASE WHEN '{{ $json.body.qualifications }}' != '' THEN '{{ $json.body.qualifications }}' ELSE NULL END,
-    'pending_approval',
-    '{{ $json.body.timestamp }}',
-    '{{ $json.body.timestamp }}'
-) ON CONFLICT (id) DO UPDATE SET
-    email = EXCLUDED.email,
-    specializations = EXCLUDED.specializations,
-    working_hours = EXCLUDED.working_hours,
-    working_days = EXCLUDED.working_days,
-    service_area = EXCLUDED.service_area,
-    has_vehicle = EXCLUDED.has_vehicle,
-    experience_years = EXCLUDED.experience_years,
-    qualifications = EXCLUDED.qualifications,
-    last_activity_at = EXCLUDED.last_activity_at;
-```
-
-### 7. PostgreSQL Node (Создание записи в master_settings)
-**Назначение:** Создать расширенные настройки мастера с графиком работы, специализациями и зоной обслуживания.
-
-**Query:**
-```sql
-INSERT INTO master_settings (
-    master_id,
-    service_area,
-    -- Рабочие дни (уже в булевом формате из вебхука)
-    work_mo, work_di, work_mi, work_do, work_fr, work_sa, work_so,
-    -- Время работы (используем общее время из формы для всех рабочих дней)
-    work_start_mo, work_end_mo,
-    work_start_di, work_end_di,
-    work_start_mi, work_end_mi,
-    work_start_do, work_end_do,
-    work_start_fr, work_end_fr,
-    work_start_sa, work_end_sa,
-    work_start_so, work_end_so,
-    -- Специализации
-    spec_elektrik, spec_sanitaer, spec_heizung, spec_maler,
-    spec_elektriker, spec_klempner, spec_schlosser, spec_garten, spec_reinigung, spec_other
-) VALUES (
-    '{{ $json.body.master_id }}',
-    '{{ $json.body.serviceArea }}',
-    -- Рабочие дни (прямые значения из вебхука)
+    -- Рабочие дни (булевы значения)
     {{ $json.body.work_mo }}, {{ $json.body.work_di }}, {{ $json.body.work_mi }},
     {{ $json.body.work_do }}, {{ $json.body.work_fr }}, {{ $json.body.work_sa }}, {{ $json.body.work_so }},
-    -- Время работы (используем общее время из формы для всех рабочих дней)
-    CASE WHEN {{ $json.body.work_mo }} THEN '{{ $json.body.workingHours.start }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_mo }} THEN '{{ $json.body.workingHours.end }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_di }} THEN '{{ $json.body.workingHours.start }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_di }} THEN '{{ $json.body.workingHours.end }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_mi }} THEN '{{ $json.body.workingHours.start }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_mi }} THEN '{{ $json.body.workingHours.end }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_do }} THEN '{{ $json.body.workingHours.start }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_do }} THEN '{{ $json.body.workingHours.end }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_fr }} THEN '{{ $json.body.workingHours.start }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_fr }} THEN '{{ $json.body.workingHours.end }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_sa }} THEN '{{ $json.body.workingHours.start }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_sa }} THEN '{{ $json.body.workingHours.end }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_so }} THEN '{{ $json.body.workingHours.start }}:00' ELSE NULL END,
-    CASE WHEN {{ $json.body.work_so }} THEN '{{ $json.body.workingHours.end }}:00' ELSE NULL END,
-    -- Специализации (булевы значения из JavaScript обработки)
+    -- Время работы (для всех дней используем общее время из формы)
+    CASE WHEN {{ $json.body.work_mo }} THEN '{{ $json.body.workingHours.start }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_mo }} THEN '{{ $json.body.workingHours.end }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_di }} THEN '{{ $json.body.workingHours.start }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_di }} THEN '{{ $json.body.workingHours.end }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_mi }} THEN '{{ $json.body.workingHours.start }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_mi }} THEN '{{ $json.body.workingHours.end }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_do }} THEN '{{ $json.body.workingHours.start }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_do }} THEN '{{ $json.body.workingHours.end }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_fr }} THEN '{{ $json.body.workingHours.start }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_fr }} THEN '{{ $json.body.workingHours.end }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_sa }} THEN '{{ $json.body.workingHours.start }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_sa }} THEN '{{ $json.body.workingHours.end }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_so }} THEN '{{ $json.body.workingHours.start }}:00'::time ELSE NULL END,
+    CASE WHEN {{ $json.body.work_so }} THEN '{{ $json.body.workingHours.end }}:00'::time ELSE NULL END,
+    -- Специализации (булевы значения)
     {{ $json.body.spec_elektrik }}, {{ $json.body.spec_sanitaer }}, {{ $json.body.spec_heizung }}, {{ $json.body.spec_maler }},
     {{ $json.body.spec_elektriker }}, {{ $json.body.spec_klempner }}, {{ $json.body.spec_schlosser }}, {{ $json.body.spec_garten }}, {{ $json.body.spec_reinigung }}, {{ $json.body.spec_other }}
 ) ON CONFLICT (master_id) DO UPDATE SET
+    has_vehicle = EXCLUDED.has_vehicle,
+    experience_years = EXCLUDED.experience_years,
+    qualifications = EXCLUDED.qualifications,
     service_area = EXCLUDED.service_area,
+    working_hours = EXCLUDED.working_hours,
+    working_days = EXCLUDED.working_days,
     work_mo = EXCLUDED.work_mo, work_di = EXCLUDED.work_di, work_mi = EXCLUDED.work_mi,
     work_do = EXCLUDED.work_do, work_fr = EXCLUDED.work_fr, work_sa = EXCLUDED.work_sa, work_so = EXCLUDED.work_so,
     work_start_mo = EXCLUDED.work_start_mo, work_end_mo = EXCLUDED.work_end_mo,
