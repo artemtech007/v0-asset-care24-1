@@ -64,7 +64,15 @@ export function RegistrierungForm() {
     passwort: "",
     specializations: [] as string[],
     workingHours: { start: "08:00", end: "18:00" },
-    workingDays: ["mo", "di", "mi", "do", "fr"] as string[],
+    workingDays: {
+      mo: true,
+      di: true,
+      mi: true,
+      do: true,
+      fr: true,
+      sa: false,
+      so: false
+    } as Record<string, boolean>,
     serviceArea: "",
     hasVehicle: true,
     experience: "",
@@ -191,9 +199,10 @@ export function RegistrierungForm() {
   const toggleWorkingDay = (day: string) => {
     setHandwerkerData((prev) => ({
       ...prev,
-      workingDays: prev.workingDays.includes(day)
-        ? prev.workingDays.filter((d) => d !== day)
-        : [...prev.workingDays, day],
+      workingDays: {
+        ...prev.workingDays,
+        [day]: !prev.workingDays[day]
+      },
     }))
   }
 
@@ -469,7 +478,7 @@ export function RegistrierungForm() {
               type="button"
               onClick={() => toggleWorkingDay(day)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                handwerkerData.workingDays.includes(day)
+                handwerkerData.workingDays[day]
                   ? "bg-primary text-white"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
