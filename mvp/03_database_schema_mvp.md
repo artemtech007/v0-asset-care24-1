@@ -171,7 +171,76 @@
 | `created_at` | timestamptz | default `now()` | Дата создания сессии |
 | `updated_at` | timestamptz | default `now()` | Дата обновления |
 
-### 1.10 `reviews` (Отзывы клиентов)
+### 1.10 `master_settings` (Расширенные настройки мастеров)
+Таблица для хранения детальных настроек мастеров: график работы, специализации, зоны обслуживания.
+
+| Column | Type | Constraints | Описание |
+| :--- | :--- | :--- | :--- |
+| `id` | uuid | PK, default `gen_random_uuid()` | Уникальный ID настройки |
+| `master_id` | text | FK -> `masters.id`, UNIQUE | Ссылка на мастера |
+| `service_area` | text | | Зона обслуживания (текст: "10115, 10117") |
+| `work_mo` | boolean | default false | Работает по понедельникам |
+| `work_di` | boolean | default false | Работает по вторникам |
+| `work_mi` | boolean | default false | Работает по средам |
+| `work_do` | boolean | default false | Работает по четвергам |
+| `work_fr` | boolean | default false | Работает по пятницам |
+| `work_sa` | boolean | default false | Работает по субботам |
+| `work_so` | boolean | default false | Работает по воскресеньям |
+| `work_start_mo` | time | | Время начала работы по понедельникам |
+| `work_end_mo` | time | | Время окончания работы по понедельникам |
+| `work_start_di` | time | | Время начала работы по вторникам |
+| `work_end_di` | time | | Время окончания работы по вторникам |
+| `work_start_mi` | time | | Время начала работы по средам |
+| `work_end_mi` | time | | Время окончания работы по средам |
+| `work_start_do` | time | | Время начала работы по четвергам |
+| `work_end_do` | time | | Время окончания работы по четвергам |
+| `work_start_fr` | time | | Время начала работы по пятницам |
+| `work_end_fr` | time | | Время окончания работы по пятницам |
+| `work_start_sa` | time | | Время начала работы по субботам |
+| `work_end_sa` | time | | Время окончания работы по субботам |
+| `work_start_so` | time | | Время начала работы по воскресеньям |
+| `work_end_so` | time | | Время окончания работы по воскресеньям |
+| `spec_elektrik` | boolean | default false | Специализация: электрика |
+| `spec_sanitaer` | boolean | default false | Специализация: сантехника |
+| `spec_heizung` | boolean | default false | Специализация: отопление |
+| `spec_maler` | boolean | default false | Специализация: малярные работы |
+| `spec_elektriker` | boolean | default false | Специализация: электромонтаж |
+| `spec_klempner` | boolean | default false | Специализация: слесарные работы |
+| `spec_schlosser` | boolean | default false | Специализация: locksmith |
+| `spec_garten` | boolean | default false | Специализация: садово-огородные работы |
+| `spec_reinigung` | boolean | default false | Специализация: клининговые услуги |
+| `spec_other` | boolean | default false | Другие специализации |
+| `created_at` | timestamptz | default `now()` | Дата создания |
+| `updated_at` | timestamptz | default `now()` | Дата последнего обновления |
+
+**Особенности:**
+- **Один к одному:** Одна запись на мастера (UNIQUE constraint на master_id)
+- **Гибкий график:** Индивидуальное время работы для каждого дня недели
+- **Булевы поля:** Для быстрой фильтрации по специализациям и рабочим дням
+- **NULL значения:** Для нерабочих дней время может быть NULL
+- **Каскадное удаление:** При удалении мастера удаляются и его настройки
+
+**Примеры использования:**
+```sql
+-- Найти электриков, работающих сегодня (суббота) с 10:00 до 16:00
+SELECT m.*, ms.work_start_sa, ms.work_end_sa
+FROM masters m
+JOIN master_settings ms ON m.id = ms.master_id
+WHERE m.status = 'active'
+  AND ms.spec_elektrik = true
+  AND ms.work_sa = true
+  AND ms.work_start_sa <= '10:00:00'
+  AND ms.work_end_sa >= '16:00:00';
+
+-- Обновить график работы мастера
+UPDATE master_settings
+SET work_sa = true,
+    work_start_sa = '09:00:00',
+    work_end_sa = '15:00:00'
+WHERE master_id = 'mid_wa_49123456789';
+```
+
+### 1.11 `reviews` (Отзывы клиентов)
 Оценки качества работы мастеров.
 
 | Column | Type | Constraints | Описание |
@@ -267,7 +336,51 @@ LEFT JOIN reviews rv ON r.id = rv.request_id
 GROUP BY m.id, m.full_name, m.phone, m.status, m.rating, m.completed_jobs;
 ```
 
-### 2.3 `view_client_history`
+### 2.4 `view_master_details`
+Полная информация о мастерах с их настройками для админ-панели.
+
+```sql
+CREATE OR REPLACE VIEW view_master_details AS
+SELECT
+    m.id as master_id,
+    CONCAT(m.first_name, ' ', m.last_name) as full_name,
+    m.phone,
+    m.email,
+    m.status as master_status,
+    m.rating,
+    m.completed_jobs,
+    m.created_at as registered_at,
+
+    -- Настройки графика работы
+    ms.service_area,
+    -- Общее время работы (для совместимости, берем из понедельника)
+    ms.work_start_mo as work_start,
+    ms.work_end_mo as work_end,
+    ms.work_mo, ms.work_di, ms.work_mi, ms.work_do, ms.work_fr, ms.work_sa, ms.work_so,
+
+    -- Специализации
+    ms.spec_elektrik, ms.spec_sanitaer, ms.spec_heizung, ms.spec_maler,
+    ms.spec_elektriker, ms.spec_klempner, ms.spec_schlosser, ms.spec_garten, ms.spec_reinigung, ms.spec_other,
+
+    -- Статистика
+    COUNT(r.id) as total_requests,
+    COUNT(CASE WHEN r.status = 'completed' THEN 1 END) as completed_requests,
+    COUNT(CASE WHEN r.status = 'in_progress' THEN 1 END) as active_requests,
+    AVG(rv.rating) as avg_client_rating,
+    MAX(r.completed_at) as last_job_date
+
+FROM masters m
+LEFT JOIN master_settings ms ON m.id = ms.master_id
+LEFT JOIN requests r ON m.id = r.master_id
+LEFT JOIN reviews rv ON r.id = rv.request_id
+GROUP BY m.id, m.first_name, m.last_name, m.phone, m.email, m.status, m.rating, m.completed_jobs, m.created_at,
+         ms.service_area, ms.work_start, ms.work_end,
+         ms.work_mo, ms.work_di, ms.work_mi, ms.work_do, ms.work_fr, ms.work_sa, ms.work_so,
+         ms.spec_elektrik, ms.spec_sanitaer, ms.spec_heizung, ms.spec_maler,
+         ms.spec_elektriker, ms.spec_klempner, ms.spec_schlosser, ms.spec_garten, ms.spec_reinigung, ms.spec_other;
+```
+
+### 2.5 `view_client_history`
 История взаимодействия с клиентами.
 
 ```sql

@@ -178,7 +178,58 @@ CREATE TABLE public.master_status (
 );
 
 -- =====================================================
--- 10. REVIEWS TABLE
+-- 10. MASTER SETTINGS TABLE (Расширенные настройки мастеров)
+-- =====================================================
+CREATE TABLE public.master_settings (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    master_id text REFERENCES public.masters(id) ON DELETE CASCADE UNIQUE,
+
+    -- Зона обслуживания
+    service_area text,
+
+    -- Рабочие дни недели (булевы поля)
+    work_mo boolean DEFAULT false,
+    work_di boolean DEFAULT false,
+    work_mi boolean DEFAULT false,
+    work_do boolean DEFAULT false,
+    work_fr boolean DEFAULT false,
+    work_sa boolean DEFAULT false,
+    work_so boolean DEFAULT false,
+
+    -- Время работы по дням недели
+    work_start_mo time,
+    work_end_mo time,
+    work_start_di time,
+    work_end_di time,
+    work_start_mi time,
+    work_end_mi time,
+    work_start_do time,
+    work_end_do time,
+    work_start_fr time,
+    work_end_fr time,
+    work_start_sa time,
+    work_end_sa time,
+    work_start_so time,
+    work_end_so time,
+
+    -- Специализации (булевы поля)
+    spec_elektrik boolean DEFAULT false,
+    spec_sanitaer boolean DEFAULT false,
+    spec_heizung boolean DEFAULT false,
+    spec_maler boolean DEFAULT false,
+    spec_elektriker boolean DEFAULT false,
+    spec_klempner boolean DEFAULT false,
+    spec_schlosser boolean DEFAULT false,
+    spec_garten boolean DEFAULT false,
+    spec_reinigung boolean DEFAULT false,
+    spec_other boolean DEFAULT false,
+
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
+
+-- =====================================================
+-- 11. REVIEWS TABLE
 -- =====================================================
 CREATE TABLE public.reviews (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -252,6 +303,13 @@ CREATE INDEX idx_reviews_client ON reviews(client_id);
 CREATE INDEX idx_reviews_master ON reviews(master_id);
 CREATE INDEX idx_reviews_rating ON reviews(rating);
 
+-- Master settings indexes
+CREATE INDEX idx_master_settings_master ON master_settings(master_id);
+CREATE INDEX idx_master_settings_service_area ON master_settings(service_area);
+-- Composite indexes for common queries
+CREATE INDEX idx_master_settings_work_days ON master_settings(work_mo, work_di, work_mi, work_do, work_fr, work_sa, work_so);
+CREATE INDEX idx_master_settings_specs ON master_settings(spec_elektrik, spec_sanitaer, spec_heizung, spec_maler);
+
 -- =====================================================
 -- ROW LEVEL SECURITY (RLS) - for Supabase
 -- =====================================================
@@ -265,6 +323,7 @@ ALTER TABLE public.requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.request_media ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.client_status ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.master_status ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.master_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
@@ -284,6 +343,14 @@ FOR SELECT USING (
 -- Allow masters to read their own profile
 CREATE POLICY "Masters can read own profile" ON public.masters
 FOR SELECT USING (id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+-- Allow masters to read their own settings
+CREATE POLICY "Masters can read own settings" ON public.master_settings
+FOR SELECT USING (master_id = current_setting('request.jwt.claims', true)::json->>'sub');
+
+-- Allow masters to update their own settings
+CREATE POLICY "Masters can update own settings" ON public.master_settings
+FOR UPDATE USING (master_id = current_setting('request.jwt.claims', true)::json->>'sub');
 
 -- Similar policies needed for other tables...
 -- (Detailed RLS policies to be defined based on security requirements)
@@ -311,6 +378,39 @@ VALUES ('cid_wa_491510416555', 'start', '{"last_action": "greeting_sent"}'::json
 -- Sample master status (активный мастер)
 INSERT INTO public.master_status (master_id, current_state, is_on_shift, state_data)
 VALUES ('mid_wa_491510416556', 'idle', true, '{"available_for_jobs": true}'::jsonb);
+
+-- Sample master settings
+INSERT INTO public.master_settings (
+    master_id,
+    service_area,
+    -- Рабочие дни
+    work_mo, work_di, work_mi, work_do, work_fr, work_sa, work_so,
+    -- Время работы (сейчас одинаковое для всех дней, но можно сделать разное)
+    work_start_mo, work_end_mo,
+    work_start_di, work_end_di,
+    work_start_mi, work_end_mi,
+    work_start_do, work_end_do,
+    work_start_fr, work_end_fr,
+    work_start_sa, work_end_sa,
+    work_start_so, work_end_so,
+    -- Специализации
+    spec_elektrik, spec_sanitaer
+) VALUES (
+    'mid_wa_491510416556',
+    '10115, 10117, 10119',
+    -- работает пн-пт
+    true, true, true, true, true, false, false,
+    -- время работы (пока одинаковое для всех дней)
+    '08:00:00', '18:00:00',  -- понедельник
+    '08:00:00', '18:00:00',  -- вторник
+    '08:00:00', '18:00:00',  -- среда
+    '08:00:00', '18:00:00',  -- четверг
+    '08:00:00', '18:00:00',  -- пятница
+    NULL, NULL,               -- суббота (не работает)
+    NULL, NULL,               -- воскресенье (не работает)
+    -- специализации
+    true, true  -- электрик и сантехник
+);
 
 -- =====================================================
 -- END OF SCHEMA
