@@ -39,8 +39,6 @@
 | `first_name` | text | NOT NULL | Имя мастера |
 | `last_name` | text | NOT NULL | Фамилия мастера |
 | `status` | text | default 'pending_approval' | Статус: `pending_approval`, `approved`, `active`, `suspended`, `blocked` |
-| `rating` | numeric(3,2) | default 0 | Рейтинг от 0 до 5 |
-| `completed_jobs` | integer | default 0 | Количество выполненных работ |
 | `last_activity_at` | timestamptz | default `now()` | Последняя активность |
 | `meta_data` | jsonb | default '{}' | Дополнительные данные |
 | `created_at` | timestamptz | default `now()` | Дата создания профиля |
@@ -144,8 +142,8 @@
 | `created_at` | timestamptz | default `now()` | Дата создания сессии |
 | `updated_at` | timestamptz | default `now()` | Дата обновления |
 
-### 1.9 `master_status` (Статусы мастеров)
-Машина состояний для диалогов с мастерами.
+### 1.9 `master_status` (Статусы и метрики мастеров)
+Машина состояний для диалогов с мастерами + метрики производительности для маршрутизации заявок.
 
 | Column | Type | Constraints | Описание |
 | :--- | :--- | :--- | :--- |
@@ -158,8 +156,15 @@
 | `is_active` | boolean | default true | Активная ли сессия |
 | `current_location` | geography | | Последнее известное местоположение (Point) |
 | `is_on_shift` | boolean | default false | На смене ли мастер |
+| `rating` | numeric(3,2) | CHECK (rating >= 0 AND rating <= 5) | Текущий рейтинг мастера |
+| `completed_jobs` | integer | default 0 | Количество завершенных работ |
 | `created_at` | timestamptz | default `now()` | Дата создания сессии |
 | `updated_at` | timestamptz | default `now()` | Дата обновления |
+
+**Метрики производительности (для маршрутизации):**
+- **Rating и completed_jobs** хранятся здесь для быстрого доступа при автоматическом назначении заявок
+- **Не нужно JOIN с masters** при фильтрации мастеров по качеству работы
+- **Часто обновляются** после завершения каждой работы
 
 ### 1.10 `master_settings` (Расширенные настройки мастеров)
 Таблица для хранения детальных настроек мастеров: график работы, специализации, зоны обслуживания.

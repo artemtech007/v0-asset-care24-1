@@ -101,8 +101,8 @@ SELECT
     m.phone,
     m.email,
     m.status as master_status,
-    m.rating,
-    m.completed_jobs,
+    ms_status.rating,
+    ms_status.completed_jobs,
     m.created_at as registered_at,
 
     -- Данные из master_settings
@@ -135,9 +135,11 @@ SELECT
 
 FROM masters m
 LEFT JOIN master_settings ms ON m.id = ms.master_id
+LEFT JOIN master_status ms_status ON m.id = ms_status.master_id
 LEFT JOIN requests r ON m.id = r.master_id
 LEFT JOIN reviews rv ON r.id = rv.request_id
-GROUP BY m.id, m.first_name, m.last_name, m.phone, m.email, m.status, m.rating, m.completed_jobs, m.created_at,
+GROUP BY m.id, m.first_name, m.last_name, m.phone, m.email, m.status, m.created_at,
+         ms_status.rating, ms_status.completed_jobs,
          ms.has_vehicle, ms.experience_years, ms.qualifications, ms.documents_verified, ms.approval_date, ms.admin_comment,
          ms.service_area, ms.working_hours, ms.working_days,
          ms.work_start_mo, ms.work_end_mo,

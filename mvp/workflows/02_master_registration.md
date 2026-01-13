@@ -467,6 +467,8 @@ INSERT INTO master_status (
     state_data,
     last_message_at,
     is_active,
+    rating,
+    completed_jobs,
     created_at
 ) VALUES (
     '{{ $json.body.master_id }}',
@@ -480,6 +482,8 @@ INSERT INTO master_status (
     }'::jsonb,
     '{{ $json.body.timestamp }}',
     true,
+    0,  -- Начальный рейтинг
+    0,  -- Начальное количество работ
     '{{ $json.body.timestamp }}'
 ) ON CONFLICT (master_id) DO UPDATE SET
     current_state = EXCLUDED.current_state,
