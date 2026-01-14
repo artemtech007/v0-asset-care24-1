@@ -23,16 +23,33 @@
 
 ### 1. Webhook (Trigger)
 **Method:** `POST`
-**Path:** `/webhook/whatsapp/master-registration`
+**Path:** `d509d181-13ab-4c34-b192-4b8994ec9e49` (автоматически сгенерированный n8n)
 **Authentication:** Basic Auth (рекомендуется)
 
-**Входные данные от Twilio:**
+**Входные данные от веб-формы регистрации:**
 ```json
 {
-  "From": "+491510416555",
-  "Body": "Хочу зарегистрироваться как мастер",
-  "MessageSid": "SM123456789",
-  "MediaUrl0": "https://api.twilio.com/..."
+  "headers": {...},
+  "params": {},
+  "query": {},
+  "body": {
+    "vorname": "Alex",
+    "nachname": "Hanssen",
+    "email": "ahans@gmail.com",
+    "whatsapp": "+49123456789",
+    "specializations": ["elektrik", "sanitaer", "heizung"],
+    "workingHours": {"start": "08:00", "end": "18:00"},
+    "workingDays": {
+      "mo": true, "di": true, "mi": true, "do": true, "fr": true, "sa": false, "so": false
+    },
+    "serviceArea": "10115, 10123",
+    "hasVehicle": true,
+    "experience": "5 лет опыта",
+    "qualifications": "Мастер-электрик, Сертификат TÜV",
+    "registrationType": "einzelhandwerker",
+    "timestamp": "2026-01-12T13:41:31.853Z",
+    "source": "website_registration"
+  }
 }
 ```
 
@@ -45,6 +62,13 @@
 - В n8n Code Node нажмите "Load from File"
 - Выберите файл: `02_master_registration_code.js`
 - Или скопируйте содержимое файла в поле Code
+
+**Функции обработки:**
+- Разбор ISO timestamp на компоненты (дата, месяц, день, время, год)
+- Нормализация WhatsApp номера (удаление +, очистка от не-цифровых символов)
+- Создание ID мастера в формате `mid_wa_{нормализованный_номер}`
+- Преобразование массива специализаций в булевы поля (`spec_elektrik: true/false`)
+- Рабочие дни приходят уже в булевом формате из вебхука (`work_mo: true/false`)
 
 **Input:** JSON от webhook с данными формы регистрации:
 ```json
@@ -83,6 +107,159 @@
 ]
 ```
 
+### 3. PostgreSQL Node (Проверка существования мастера)
+**Назначение:** Проверить, не зарегистрирован ли уже мастер с таким WhatsApp номером.
+
+**Query:**
+```sql
+SELECT EXISTS(
+    SELECT 1 FROM masters
+    WHERE id = '{{ $json.body.master_id }}'
+) as master_exists;
+```
+
+**Логика:** Если мастер существует (`master_exists = true`), workflow завершается с сообщением об ошибке. Если не существует (`master_exists = false`), продолжается регистрация.
+
+### 4. If Node (Условное ветвление)
+**Назначение:** Определить дальнейший путь выполнения на основе проверки существования мастера.
+
+**Условие:** `{{ $json.master_exists }} = false`
+
+**Ветки:**
+- **True:** Мастер не существует → продолжить регистрацию
+- **False:** Мастер уже существует → отправить сообщение об ошибке
+
+### 5. Edit Fields Node (Подготовка данных)
+**Назначение:** Подготовить и структурировать данные для вставки в базу данных.
+
+**Маппинг полей:**
+- `vorname` → `{{ $json.body.vorname }}`
+- `nachname` → `{{ $json.body.nachname }}`
+- `email` → `{{ $json.body.email }}`
+- `whatsapp` → `{{ $json.body.whatsapp }}`
+- `master_id` → `{{ $json.body.master_id }}`
+- `wa_norm` → `{{ $json.body.wa_norm }}`
+- И все остальные поля из обработанного JSON...
+
+### 6. PostgreSQL Node (Вставка в таблицу masters)
+**Назначение:** Создать базовый профиль мастера в таблице `masters`.
+
+**Query:**
+```sql
+INSERT INTO masters (
+    id, phone, email, whatsapp_id, first_name, last_name,
+    status, specializations, working_hours, working_days,
+    service_area, has_vehicle, experience_years, qualifications,
+    created_at, updated_at
+) VALUES (
+    '{{ $json.master_id }}',
+    '{{ $json.whatsapp }}',
+    '{{ $json.email }}',
+    '{{ $json.wa_norm }}',
+    '{{ $json.vorname }}',
+    '{{ $json.nachname }}',
+    'pending_approval',
+    '{{ $json.specializations }}'::text[],
+    '{{ $json.workingHours }}'::jsonb,
+    ARRAY[...]::text[],
+    '{{ $json.serviceArea }}',
+    {{ $json.hasVehicle }},
+    CASE WHEN '{{ $json.experience }}' != '' THEN '{{ $json.experience }}'::integer ELSE NULL END,
+    CASE WHEN '{{ $json.qualifications }}' != '' THEN '{{ $json.qualifications }}' ELSE NULL END,
+    '{{ $json.timestamp }}'::timestamptz,
+    '{{ $json.timestamp }}'::timestamptz
+) ON CONFLICT (id) DO NOTHING;
+```
+
+### 7. PostgreSQL Node (Вставка в таблицу master_settings)
+**Назначение:** Создать расширенные настройки мастера с графиком работы и специализациями.
+
+**Query:**
+```sql
+INSERT INTO master_settings (
+    master_id, service_area, has_vehicle, experience_years, qualifications,
+    work_mo, work_di, work_mi, work_do, work_fr, work_sa, work_so,
+    work_start_mo, work_end_mo, work_start_di, work_end_di, ...,
+    spec_elektrik, spec_sanitaer, spec_heizung, spec_maler, ...
+) VALUES (
+    '{{ $json.master_id }}',
+    '{{ $json.serviceArea }}',
+    {{ $json.hasVehicle }},
+    CASE WHEN '{{ $json.experience }}' != '' THEN '{{ $json.experience }}'::integer ELSE NULL END,
+    CASE WHEN '{{ $json.qualifications }}' != '' THEN '{{ $json.qualifications }}' ELSE NULL END,
+    {{ $json.work_mo }}, {{ $json.work_di }}, ..., {{ $json.work_so }},
+    '{{ $json.workingHours.start }}', '{{ $json.workingHours.end }}', ...,
+    {{ $json.spec_elektrik }}, {{ $json.spec_sanitaer }}, ..., {{ $json.spec_other }}
+);
+```
+
+### 8. PostgreSQL Node (Вставка в таблицу master_status)
+**Назначение:** Инициализировать машину состояний для диалогов с мастером.
+
+**Query:**
+```sql
+INSERT INTO master_status (
+    master_id, current_state, state_data, is_active,
+    created_at, updated_at
+) VALUES (
+    '{{ $json.master_id }}',
+    'start',
+    '{}'::jsonb,
+    true,
+    now(),
+    now()
+);
+```
+
+### 9. Telegram Node (Отправка уведомления)
+**Назначение:** Отправить уведомление администраторам о новой регистрации мастера.
+
+**Parse Mode:** HTML
+
+**Сообщение:**
+```
+Master_id:
+{{ $('Edit Fields').item.json.master_id }}
+
+Принята заявка с сайта от:
+{{ $('Edit Fields').item.json.whatsapp }}
+
+{{ $('Edit Fields').item.json.vorname }}
+{{ $('Edit Fields').item.json.nachname }}
+
+Заявка подана:
+{{ $('Edit Fields').item.json.registration_date }}
+{{ $('Edit Fields').item.json.registration_time }}
+
+Тип:
+{{ $('Edit Fields').item.json.registrationType }}
+
+______________
+Berufserfahrung:
+{{ $('Edit Fields').item.json.experience }}
+
+______________
+Qualifikationen &amp; Zertifikate:
+{{ $('Edit Fields').item.json.qualifications }}
+```
+
+### 10. Error Handling (Мастер уже существует)
+**Назначение:** Обработка случая, когда мастер с таким WhatsApp уже зарегистрирован.
+
+**Сообщение:** "Мастер с таким Whatsapp уже существует"
+
+---
+
+## Реальный Workflow файл
+
+**Файл:** [`Registration_handwerker_v1.json`](../n8n/Registration_handwerker_v1.json)
+
+**Импорт в n8n:**
+1. Откройте n8n интерфейс
+2. Перейдите в Workflows
+3. Нажмите "Import from File"
+4. Выберите `Registration_handwerker_v1.json`
+
 **Code (JavaScript):**
 ```javascript
 // Code нода для обработки данных веб-регистрации мастера
@@ -97,7 +274,9 @@ const CONFIG = {
     date: 'registration_date',           // дата YYYY-MM-DD
     month: 'registration_month',         // месяц (1-12)
     day: 'registration_day',             // день (1-31)
-    time: 'registration_time'            // время HH:MM:SS
+    time: 'registration_time',           // время HH:MM:SS
+    year: 'registration_year'            // год YYYY
+  },
   },
   // Поле с WhatsApp номером
   whatsappField: 'body.whatsapp',

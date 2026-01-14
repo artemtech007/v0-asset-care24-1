@@ -149,7 +149,7 @@ export function RegistrierungForm() {
     setIsSubmitting(false)
 
     // Open WhatsApp with verification message and UTM tracking
-    const whatsappUrl = "https://wa.me/4915510415655?text=Registrierung%20abschließen&utm_source=web&utm_medium=master&utm_campaign=master_reg"
+    const whatsappUrl = "https://wa.me/14155238886?text=Registrierung%20abschließen&utm_source=web&utm_medium=master&utm_campaign=master_reg"
     window.open(whatsappUrl, "_blank")
 
     // Redirect to home page after successful registration

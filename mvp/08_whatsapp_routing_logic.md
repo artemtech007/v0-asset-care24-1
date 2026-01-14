@@ -41,18 +41,17 @@ https://wa.me/{номер}?text={UTM_метка}_{дополнительная_�
 
 ### Примеры меток
 
-#### Для существующих клиентов (по домам):
+#### Для существующих клиентов (контрактные):
 ```
-Дом №1: https://wa.me/491510416555?text=house_1_request
-Дом №2: https://wa.me/491510416555?text=house_2_request
-Комплекс A: https://wa.me/491510416555?text=complex_a_request
+Дом №1: https://wa.me/14155238886?text=contract-1-qr-request
+Комплекс A: https://wa.me/14155238886?text=contract-2-qr-request
 ```
 
-#### Для новых клиентов:
+#### Для новых клиентов (публичные):
 ```
-Реклама Google: https://wa.me/491510416555?text=ad_google_request
-Реклама Facebook: https://wa.me/491510416555?text=ad_facebook_request
-Сайт: https://wa.me/491510416555?text=website_request
+Реклама 1 (Google/Facebook): https://wa.me/14155238886?text=public-1-ad1-request
+Реклама 2 (Instagram/TikTok): https://wa.me/14155238886?text=public-2-ad2-request
+Органический трафик: https://wa.me/14155238886?text=public-3-organic-request
 ```
 
 ### Логика обработки меток
@@ -61,42 +60,39 @@ https://wa.me/{номер}?text={UTM_метка}_{дополнительная_�
 ```javascript
 // Анализ первого сообщения от нового пользователя
 function analyzeUTMTag(message) {
-  if (message.startsWith("house_")) {
-    const houseId = message.split("_")[1];
-    return {
-      category: "existing_client",
-      subcategory: `house_${houseId}`,
-      source: "qr_code"
-    };
+  if (message.startsWith("contract-")) {
+    const parts = message.split("-");
+    if (parts.length >= 3 && parts[3] === "request") {
+      const number = parts[1];
+      const source = parts[2];
+      return {
+        category: "existing_client",
+        subcategory: `contract_${number}_${source}`,
+        source: source === "qr" ? "qr_code" : source
+      };
+    }
   }
 
-  if (message.startsWith("complex_")) {
-    const complexId = message.split("_")[1];
-    return {
-      category: "existing_client",
-      subcategory: `complex_${complexId}`,
-      source: "qr_code"
-    };
+  if (message.startsWith("public-")) {
+    const parts = message.split("-");
+    if (parts.length >= 4 && parts[3] === "request") {
+      const number = parts[1];
+      const source = parts[2];
+      let adSource = "unknown";
+
+      if (source === "ad1") adSource = "google_facebook";
+      else if (source === "ad2") adSource = "instagram_tiktok";
+      else if (source === "organic") adSource = "website";
+
+      return {
+        category: "new_client",
+        subcategory: `public_${number}_${source}`,
+        source: adSource === "website" ? "organic" : "advertisement"
+      };
+    }
   }
 
-  if (message.startsWith("ad_")) {
-    const adSource = message.split("_")[1];
-    return {
-      category: "new_client",
-      subcategory: `ad_${adSource}`,
-      source: "advertisement"
-    };
-  }
-
-  if (message === "website_request") {
-    return {
-      category: "new_client",
-      subcategory: "website",
-      source: "organic"
-    };
-  }
-
-  // Без метки
+  // Без метки - обычное сообщение
   return {
     category: "unknown_client",
     subcategory: null,
@@ -206,14 +202,12 @@ if (user.roles?.includes('client') && user.roles?.includes('master')) {
 ## 📋 Категории клиентов
 
 ### Existing Clients (существующие клиенты компании)
-- **house_1, house_2, ...** - Конкретные дома
-- **complex_a, complex_b, ...** - Жилые комплексы
+- **contract-1-qr, contract-2-qr, ...** - Контрактные клиенты по QR-кодам
 - **Особая обработка:** Приоритетные условия, известные адреса
 
 ### New Clients (новые клиенты)
-- **ad_google, ad_facebook, ...** - С рекламы
-- **website** - Органический трафик с сайта
-- **referral** - По рекомендации
+- **public-1-ad1, public-2-ad2** - Клиенты с рекламы
+- **public-3-organic** - Органический трафик с сайта
 - **Обработка:** Дополнительные вопросы, стандартные условия
 
 ### Unknown Clients (неопределенные)

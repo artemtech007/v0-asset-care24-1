@@ -59,9 +59,9 @@ const utmConfigs: UTMConfig[] = [
 
 export default function UTMTestPage() {
   const generateWhatsAppLink = (config: UTMConfig) => {
-    const utmTag = `${config.type}_${config.number}_${config.source}`;
-    const message = `${utmTag}_request`;
-    return `https://wa.me/491510416555?text=${encodeURIComponent(message)}`;
+    const utmTag = `${config.type}-${config.number}-${config.source}`;
+    const message = `${utmTag}-request`;
+    return `https://wa.me/14155238886?text=${encodeURIComponent(message)}`;
   };
 
   const copyToClipboard = (text: string) => {
@@ -81,10 +81,10 @@ export default function UTMTestPage() {
             </p>
             <div className="mt-4 p-4 bg-muted rounded-lg">
               <p className="text-sm font-mono">
-                Формат метки: <code className="bg-background px-2 py-1 rounded">type_number_source_request</code>
+                Формат метки: <code className="bg-background px-2 py-1 rounded">type-number-source-request</code>
               </p>
               <p className="text-xs text-muted-foreground mt-2">
-                Пример: contract_1_qr_request → Контрактный клиент из дома №1 через QR
+                Пример: contract-1-qr-request → Контрактный клиент из дома №1 через QR
               </p>
             </div>
           </div>

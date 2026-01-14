@@ -368,7 +368,7 @@ cd site && npm run build
 ### Twilio
 - **Аккаунт:** Настроен Антоном
 - **Sandbox:** +14155238886
-- **Production:** +4915510415655
+- **Production:** +14155238886
 
 ---
 

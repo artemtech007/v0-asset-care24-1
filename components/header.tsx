@@ -126,7 +126,7 @@ export function Header() {
             {/* WhatsApp icon button - show on tablet and desktop */}
             {screenWidth >= 640 && (
               <a
-                href="https://wa.me/4915510415655"
+                href="https://wa.me/14155238886"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-[#25D366] hover:bg-[#128C7E] transition-colors duration-200"
@@ -191,7 +191,7 @@ export function Header() {
               <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-border">
                 {/* WhatsApp button in mobile menu */}
                 <a
-                  href="https://wa.me/4915510415655"
+                  href="https://wa.me/14155238886"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full h-12 rounded-lg bg-[#25D366] hover:bg-[#128C7E] text-white font-medium transition-colors"

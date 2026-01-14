@@ -1,0 +1,1426 @@
+{
+  "name": "Registration_handwerker",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d509d181-13ab-4c34-b192-4b8994ec9e49",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "eeff8660-3b65-432e-9465-06fb9cbb839d",
+      "name": "Webhook",
+      "webhookId": "d509d181-13ab-4c34-b192-4b8994ec9e49"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT EXISTS(\n    SELECT 1 FROM masters\n    WHERE id = '{{ $json.body.master_id }}'\n) as master_exists;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        -16
+      ],
+      "id": "4b2ff89a-8525-45e2-9abe-e054c5d64733",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "eV3tnvhftakbPLw5",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code нода для обработки данных веб-регистрации мастера\n// Файл: 02_master_registration_code.js\n// Используется в n8n Code Node для workflow регистрации мастеров\n\n// === КОНФИГУРАЦИЯ ===\nconst CONFIG = {\n  // Входное поле с ISO timestamp\n  inputTimestampField: 'body.timestamp',\n  // Выходные поля для timestamp\n  outputTimestampFields: {\n    date: 'registration_date',           // дата YYYY-MM-DD\n    month: 'registration_month',         // месяц (1-12)\n    day: 'registration_day',             // день (1-31)\n    time: 'registration_time',           // время HH:MM:SS\n    year: 'registration_year'            // год YYYY\n  },\n  // Поле с WhatsApp номером\n  whatsappField: 'body.whatsapp',\n  // Выходные поля для WhatsApp\n  outputWhatsappFields: {\n    normalized: 'wa_norm',               // нормализованный номер без +\n    masterId: 'master_id'                // полный ID мастера\n  },\n  // Поля для специализаций (для преобразования массива в булевы поля)\n  specializationFields: {\n    elektrik: 'spec_elektrik',\n    sanitaer: 'spec_sanitaer',\n    heizung: 'spec_heizung',\n    maler: 'spec_maler',\n    elektriker: 'spec_elektriker',\n    klempner: 'spec_klempner',\n    schlosser: 'spec_schlosser',\n    garten: 'spec_garten',\n    reinigung: 'spec_reinigung',\n    other: 'spec_other'\n  },\n  // Рабочие дни теперь приходят в булевом формате из вебхука (work_mo, work_di, etc.)\n  // Локаль для форматирования\n  locale: 'ru-RU'\n};\n// === КОНЕЦ КОНФИГУРАЦИИ ===\n\n// Функция для преобразования ISO timestamp в читаемые компоненты\nfunction parseISOTimestamp(isoString, config) {\n  const date = new Date(isoString);\n\n  // Проверяем валидность даты\n  if (isNaN(date.getTime())) {\n    throw new Error(`Invalid ISO timestamp: ${isoString}`);\n  }\n\n  return {\n    [config.outputTimestampFields.date]: date.toISOString().split('T')[0], // YYYY-MM-DD\n    [config.outputTimestampFields.month]: date.getMonth() + 1, // 1-12\n    [config.outputTimestampFields.day]: date.getDate(), // 1-31\n    [config.outputTimestampFields.time]: date.toISOString().split('T')[1].split('.')[0], // HH:MM:SS\n    [config.outputTimestampFields.year]: date.getFullYear() // YYYY\n  };\n}\n\n// Функция для преобразования массива специализаций в булевы поля\nfunction convertSpecializationsToBooleans(specializationsArray, config) {\n  const result = {};\n\n  // Сначала устанавливаем все специализации в false\n  Object.values(config.specializationFields).forEach(field => {\n    result[field] = false;\n  });\n\n  // Если массив передан и не пустой\n  if (Array.isArray(specializationsArray) && specializationsArray.length > 0) {\n    // Проходим по каждой специализации из массива\n    specializationsArray.forEach(spec => {\n      // Нормализуем название специализации (приводим к нижнему регистру, убираем пробелы)\n      const normalizedSpec = spec.toLowerCase().replace(/\\s+/g, '');\n\n      // Ищем соответствующее поле в конфигурации\n      const fieldName = config.specializationFields[normalizedSpec];\n      if (fieldName) {\n        result[fieldName] = true;\n      } else {\n        // Если специализация не найдена в конфигурации, записываем в \"other\"\n        result[config.specializationFields.other] = true;\n      }\n    });\n  }\n\n  return result;\n}\n\n// Убрана функция convertWorkingDaysToBooleans - рабочие дни теперь приходят в булевом формате из вебхука\n\n// Функция для нормализации WhatsApp номера\nfunction normalizeWhatsappNumber(whatsappNumber) {\n  if (!whatsappNumber || typeof whatsappNumber !== 'string') {\n    throw new Error(`Invalid WhatsApp number: ${whatsappNumber}`);\n  }\n\n  // Убираем + в начале и любые не-цифровые символы\n  const normalized = whatsappNumber.replace(/^\\+/, '').replace(/\\D/g, '');\n\n  if (normalized.length < 10) {\n    throw new Error(`WhatsApp number too short: ${normalized}`);\n  }\n\n  return normalized;\n}\n\n// Основная логика обработки\nfor (let i = 0; i < $input.all().length; i++) {\n  const item = $input.all()[i];\n\n  // 1. Обрабатываем timestamp\n  if (item.json.body && item.json.body.timestamp) {\n    const isoTimestamp = item.json.body.timestamp;\n    try {\n      const timestampFields = parseISOTimestamp(isoTimestamp, CONFIG);\n      // Добавляем поля к body\n      Object.assign(item.json.body, timestampFields);\n    } catch (error) {\n      console.error(`Error parsing timestamp ${isoTimestamp}:`, error.message);\n      // В случае ошибки добавляем пустые значения\n      Object.assign(item.json.body, {\n        [CONFIG.outputTimestampFields.date]: null,\n        [CONFIG.outputTimestampFields.month]: null,\n        [CONFIG.outputTimestampFields.day]: null,\n        [CONFIG.outputTimestampFields.time]: null,\n        [CONFIG.outputTimestampFields.year]: null\n      });\n    }\n  }\n\n  // 2. Обрабатываем WhatsApp номер\n  if (item.json.body && item.json.body.whatsapp) {\n    const whatsappNumber = item.json.body.whatsapp;\n    try {\n      const normalizedNumber = normalizeWhatsappNumber(whatsappNumber);\n      const masterId = `mid_wa_${normalizedNumber}`;\n\n      // Добавляем поля к body\n      Object.assign(item.json.body, {\n        [CONFIG.outputWhatsappFields.normalized]: normalizedNumber,\n        [CONFIG.outputWhatsappFields.masterId]: masterId\n      });\n    } catch (error) {\n      console.error(`Error processing WhatsApp number ${whatsappNumber}:`, error.message);\n      // В случае ошибки добавляем пустые значения\n      Object.assign(item.json.body, {\n        [CONFIG.outputWhatsappFields.normalized]: null,\n        [CONFIG.outputWhatsappFields.masterId]: null\n      });\n    }\n  }\n\n  // 3. Преобразуем массив специализаций в булевы поля\n  if (item.json.body && item.json.body.specializations) {\n    try {\n      const specializationFields = convertSpecializationsToBooleans(item.json.body.specializations, CONFIG);\n      // Добавляем поля к body\n      Object.assign(item.json.body, specializationFields);\n    } catch (error) {\n      console.error(`Error processing specializations:`, error.message);\n      // В случае ошибки устанавливаем все специализации в false\n      Object.values(CONFIG.specializationFields).forEach(field => {\n        item.json.body[field] = false;\n      });\n    }\n  }\n\n  // Рабочие дни уже приходят в булевом формате из вебхука, дополнительная обработка не нужна\n}\n\n// Возвращаем обработанные данные (сохраняя всю структуру)\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "6e920b71-5112-4343-893e-79a36d37afee",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "26211ad6-59ae-4f72-b30c-a3390ac8ea54",
+              "leftValue": "={{ $json.master_exists }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        976,
+        -32
+      ],
+      "id": "bd06b6d0-dbed-4bd9-944d-e8c1f6637511",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "370e2c43-f49a-4ae8-abee-76078f87e369",
+              "name": "vorname",
+              "value": "={{ $json.body.vorname }}",
+              "type": "string"
+            },
+            {
+              "id": "f0ab6dda-63ab-42ff-b748-38ab1c3215fa",
+              "name": "nachname",
+              "value": "={{ $json.body.nachname }}",
+              "type": "string"
+            },
+            {
+              "id": "0cd42189-a5e5-4f41-8334-a7e55fb518f3",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "0453d737-eff3-404c-b177-a0a23ff8b8cd",
+              "name": "whatsapp",
+              "value": "={{ $json.body.whatsapp }}",
+              "type": "string"
+            },
+            {
+              "id": "6b855e13-d60e-4c87-8222-3168466818a9",
+              "name": "master_id",
+              "value": "={{ $json.body.master_id }}",
+              "type": "string"
+            },
+            {
+              "id": "622cbdba-731a-4d3a-bee9-945bd786ba2b",
+              "name": "wa_norm",
+              "value": "={{ $json.body.wa_norm }}",
+              "type": "string"
+            },
+            {
+              "id": "7f47a314-fc3a-4712-91da-642832edc2ae",
+              "name": "timestamp",
+              "value": "={{ $json.body.timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "d05cf031-7278-4b75-bd6f-7f76d9581056",
+              "name": "=registrationType",
+              "value": "={{ $json.body.registrationType }}",
+              "type": "string"
+            },
+            {
+              "id": "1380357c-27ae-44c8-9334-4e88bb747c4e",
+              "name": "source",
+              "value": "={{ $json.body.source }}",
+              "type": "string"
+            },
+            {
+              "id": "0c70d178-d900-4e8b-8e5c-f45c62bc2001",
+              "name": "registration_date",
+              "value": "={{ $json.body.registration_date }}",
+              "type": "string"
+            },
+            {
+              "id": "6502224c-39d3-4e16-980f-819b028c5cc2",
+              "name": "registration_year",
+              "value": "={{ $json.body.registration_year }}",
+              "type": "number"
+            },
+            {
+              "id": "2a40b338-f6a6-4cb0-927e-664b69c9f075",
+              "name": "registration_month",
+              "value": "={{ $json.body.registration_month }}",
+              "type": "number"
+            },
+            {
+              "id": "670e19c1-ec30-448b-bd09-04a3d13ed604",
+              "name": "registration_day",
+              "value": "={{ $json.body.registration_day }}",
+              "type": "number"
+            },
+            {
+              "id": "9ad164c1-433a-473a-86df-936586fdc930",
+              "name": "registration_time",
+              "value": "={{ $json.body.registration_time }}",
+              "type": "string"
+            },
+            {
+              "id": "d49deecf-6230-4f15-93a2-3203193ad126",
+              "name": "mo",
+              "value": "={{ $json.body.workingDays.mo }}",
+              "type": "boolean"
+            },
+            {
+              "id": "df13d9be-e7c9-4f8c-b1c7-b740f43f9135",
+              "name": "di",
+              "value": "={{ $json.body.workingDays.di }}",
+              "type": "boolean"
+            },
+            {
+              "id": "79a2481f-2900-42f4-8a1c-44e6603bf4fb",
+              "name": "mi",
+              "value": "={{ $json.body.workingDays.mi }}",
+              "type": "boolean"
+            },
+            {
+              "id": "ed7be14e-a263-42ec-bed5-01a90f9f9c10",
+              "name": "do",
+              "value": "={{ $json.body.workingDays.do }}",
+              "type": "boolean"
+            },
+            {
+              "id": "07c63d57-ea17-4bfa-9986-d3e4373acbbf",
+              "name": "fr",
+              "value": "={{ $json.body.workingDays.fr }}",
+              "type": "boolean"
+            },
+            {
+              "id": "d95193b0-c54e-42e3-9aec-6f42b289a6e4",
+              "name": "sa",
+              "value": "={{ $json.body.workingDays.sa }}",
+              "type": "boolean"
+            },
+            {
+              "id": "1ce24a0d-2382-4c57-aeeb-e5ae217328d9",
+              "name": "so",
+              "value": "={{ $json.body.workingDays.so }}",
+              "type": "boolean"
+            },
+            {
+              "id": "ddc47407-29c2-4496-9750-c3c60008f356",
+              "name": "workinghours_start",
+              "value": "={{ $json.body.workingHours.start }}",
+              "type": "string"
+            },
+            {
+              "id": "62e347e1-d06e-4c4a-95ea-b6c84f51257d",
+              "name": "workinghours_end",
+              "value": "={{ $json.body.workingHours.end }}",
+              "type": "string"
+            },
+            {
+              "id": "1e952719-a378-4a7a-8d4f-9c2ea716e5fe",
+              "name": "spec_elektrik",
+              "value": "={{ $json.body.spec_elektrik }}",
+              "type": "boolean"
+            },
+            {
+              "id": "5eddc6eb-0087-463e-8b10-255e29d550cf",
+              "name": "spec_sanitaer",
+              "value": "={{ $json.body.spec_sanitaer }}",
+              "type": "boolean"
+            },
+            {
+              "id": "3404a3ac-f56b-4b05-be5d-74efd773373d",
+              "name": "spec_heizung",
+              "value": "={{ $json.body.spec_heizung }}",
+              "type": "boolean"
+            },
+            {
+              "id": "c4f0d71d-5075-477b-ac82-5215c16b9dd8",
+              "name": "spec_maler",
+              "value": "={{ $json.body.spec_maler }}",
+              "type": "boolean"
+            },
+            {
+              "id": "e32d03ec-d333-41d8-82d1-ddf21552c629",
+              "name": "spec_elektriker",
+              "value": "={{ $json.body.spec_elektriker }}",
+              "type": "boolean"
+            },
+            {
+              "id": "6c792a33-ed5e-4fbf-9bf2-b7fada789338",
+              "name": "spec_klempner",
+              "value": "={{ $json.body.spec_klempner }}",
+              "type": "boolean"
+            },
+            {
+              "id": "85d71f9a-8fb0-4167-b357-fa58e3868fb6",
+              "name": "spec_schlosser",
+              "value": "={{ $json.body.spec_schlosser }}",
+              "type": "boolean"
+            },
+            {
+              "id": "8d9d1814-341f-48c4-b492-3dfd10772c50",
+              "name": "spec_garten",
+              "value": "={{ $json.body.spec_garten }}",
+              "type": "boolean"
+            },
+            {
+              "id": "3c8d551e-84e4-446d-b9e8-f0d6d14c0733",
+              "name": "spec_reinigung",
+              "value": "={{ $json.body.spec_reinigung }}",
+              "type": "boolean"
+            },
+            {
+              "id": "148e969c-2fd6-4f2f-b69e-5f944c046187",
+              "name": "spec_other",
+              "value": "={{ $json.body.spec_other }}",
+              "type": "boolean"
+            },
+            {
+              "id": "c6520b38-d7d2-47ac-974b-7197db72a9bd",
+              "name": "serviceArea",
+              "value": "={{ $json.body.serviceArea }}",
+              "type": "string"
+            },
+            {
+              "id": "65733415-2f43-4ee2-904b-f41e5dbcc028",
+              "name": "hasVehicle",
+              "value": "={{ $json.body.hasVehicle }}",
+              "type": "boolean"
+            },
+            {
+              "id": "93eb6c3a-1f61-4fd4-9dd8-6d18045a39f9",
+              "name": "experience",
+              "value": "={{ $json.body.experience }}",
+              "type": "string"
+            },
+            {
+              "id": "7f00703a-1216-4159-870e-f84bbed77390",
+              "name": "qualifications",
+              "value": "={{ $json.body.qualifications }}",
+              "type": "string"
+            },
+            {
+              "id": "80f491c6-7c7b-46e1-b37b-40cf31ed2b7f",
+              "name": "registrationType",
+              "value": "={{ $json.body.registrationType }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        -16
+      ],
+      "id": "d26f2e05-3c1a-41b6-a4fc-ed58d49c744a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## \n\n**При изменении на сайте опций при регистрации (время, професии и тд) - сюда внести корректировки**",
+        "height": 320,
+        "width": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        400,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "dc275042-4f26-4ac5-bb2a-7e65782c2782",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "masters",
+          "mode": "list",
+          "cachedResultName": "masters"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Edit Fields').item.json.master_id }}",
+            "first_name": "={{ $('Edit Fields').item.json.vorname }}",
+            "last_name": "={{ $('Edit Fields').item.json.nachname }}",
+            "email": "={{ $('Edit Fields').item.json.email }}",
+            "whatsapp_id": "={{ $('Edit Fields').item.json.whatsapp }}",
+            "status": "pending_approval",
+            "created_at": "={{ $('Edit Fields').item.json.timestamp }}",
+            "updated_at": "={{ $('Edit Fields').item.json.timestamp }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "whatsapp_id",
+              "displayName": "whatsapp_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telegram_id",
+              "displayName": "telegram_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_activity_at",
+              "displayName": "last_activity_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "meta_data",
+              "displayName": "meta_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1280,
+        -48
+      ],
+      "id": "ad8d814b-aa04-4e8b-9e51-a6776b63b9f5",
+      "name": "Insert rows in Masters",
+      "credentials": {
+        "postgres": {
+          "id": "eV3tnvhftakbPLw5",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "master_settings",
+          "mode": "list",
+          "cachedResultName": "master_settings"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_mo": "={{ $('Edit Fields').item.json.mo }}",
+            "work_di": "={{ $('Edit Fields').item.json.di }}",
+            "work_mi": "={{ $('Edit Fields').item.json.mi }}",
+            "work_do": "={{ $('Edit Fields').item.json.do }}",
+            "work_fr": "={{ $('Edit Fields').item.json.fr }}",
+            "work_sa": "={{ $('Edit Fields').item.json.sa }}",
+            "work_so": "={{ $('Edit Fields').item.json.so }}",
+            "spec_elektrik": "={{ $('Edit Fields').item.json.spec_elektrik }}",
+            "spec_sanitaer": "={{ $('Edit Fields').item.json.spec_sanitaer }}",
+            "spec_heizung": "={{ $('Edit Fields').item.json.spec_heizung }}",
+            "spec_maler": "={{ $('Edit Fields').item.json.spec_maler }}",
+            "spec_elektriker": "={{ $('Edit Fields').item.json.spec_elektriker }}",
+            "spec_klempner": "={{ $('Edit Fields').item.json.spec_klempner }}",
+            "spec_schlosser": "={{ $('Edit Fields').item.json.spec_schlosser }}",
+            "spec_garten": "={{ $('Edit Fields').item.json.spec_garten }}",
+            "spec_reinigung": "={{ $('Edit Fields').item.json.spec_reinigung }}",
+            "spec_other": "={{ $('Edit Fields').item.json.spec_other }}",
+            "service_area": "={{ $('Edit Fields').item.json.serviceArea }}",
+            "work_start_mo": "={{ $('Edit Fields').item.json.workinghours_start }}",
+            "work_start_di": "={{ $('Edit Fields').item.json.workinghours_start }}",
+            "work_start_mi": "={{ $('Edit Fields').item.json.workinghours_start }}",
+            "work_start_do": "={{ $('Edit Fields').item.json.workinghours_start }}",
+            "work_start_fr": "={{ $('Edit Fields').item.json.workinghours_start }}",
+            "work_start_sa": "={{ $('Edit Fields').item.json.workinghours_start }}",
+            "work_start_so": "={{ $('Edit Fields').item.json.workinghours_start }}",
+            "work_end_mi": "={{ $('Edit Fields').item.json.workinghours_end }}",
+            "work_end_di": "={{ $('Edit Fields').item.json.workinghours_end }}",
+            "work_end_mo": "={{ $('Edit Fields').item.json.workinghours_end }}",
+            "work_end_do": "={{ $('Edit Fields').item.json.workinghours_end }}",
+            "work_end_fr": "={{ $('Edit Fields').item.json.workinghours_end }}",
+            "work_end_sa": "={{ $('Edit Fields').item.json.workinghours_end }}",
+            "work_end_so": "={{ $('Edit Fields').item.json.workinghours_end }}",
+            "created_at": "={{ $('Edit Fields').item.json.timestamp }}",
+            "updated_at": "={{ $('Edit Fields').item.json.timestamp }}",
+            "master_id": "={{ $('Edit Fields').item.json.master_id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "master_id",
+              "displayName": "master_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "service_area",
+              "displayName": "service_area",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_mo",
+              "displayName": "work_mo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_di",
+              "displayName": "work_di",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_mi",
+              "displayName": "work_mi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_do",
+              "displayName": "work_do",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_fr",
+              "displayName": "work_fr",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_sa",
+              "displayName": "work_sa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_so",
+              "displayName": "work_so",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_start_mo",
+              "displayName": "work_start_mo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_end_mo",
+              "displayName": "work_end_mo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_start_di",
+              "displayName": "work_start_di",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_end_di",
+              "displayName": "work_end_di",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_start_mi",
+              "displayName": "work_start_mi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_end_mi",
+              "displayName": "work_end_mi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_start_do",
+              "displayName": "work_start_do",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_end_do",
+              "displayName": "work_end_do",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_start_fr",
+              "displayName": "work_start_fr",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_end_fr",
+              "displayName": "work_end_fr",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_start_sa",
+              "displayName": "work_start_sa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_end_sa",
+              "displayName": "work_end_sa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_start_so",
+              "displayName": "work_start_so",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "work_end_so",
+              "displayName": "work_end_so",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_elektrik",
+              "displayName": "spec_elektrik",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_sanitaer",
+              "displayName": "spec_sanitaer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_heizung",
+              "displayName": "spec_heizung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_maler",
+              "displayName": "spec_maler",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_elektriker",
+              "displayName": "spec_elektriker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_klempner",
+              "displayName": "spec_klempner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_schlosser",
+              "displayName": "spec_schlosser",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_garten",
+              "displayName": "spec_garten",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_reinigung",
+              "displayName": "spec_reinigung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "spec_other",
+              "displayName": "spec_other",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1760,
+        -48
+      ],
+      "id": "a4392aae-7dd1-4c5b-b14b-5a0f405ef029",
+      "name": "Insert rows in Master_settings",
+      "credentials": {
+        "postgres": {
+          "id": "eV3tnvhftakbPLw5",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "master_status",
+          "mode": "list",
+          "cachedResultName": "master_status"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "master_id": "={{ $json.id }}",
+            "current_state": "={{ $json.status }}",
+            "created_at": "={{ $json.created_at }}",
+            "updated_at": "={{ $json.updated_at }}",
+            "rating": 0,
+            "completed_jobs": 0,
+            "assigned_jobs_count": 0,
+            "max_daily_capacity": 0,
+            "paused_jobs_count": 0,
+            "state1": "0",
+            "state2": "0",
+            "is_active": false,
+            "is_on_shift": false
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "master_id",
+              "displayName": "master_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "current_state",
+              "displayName": "current_state",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "state_data",
+              "displayName": "state_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_message_at",
+              "displayName": "last_message_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "is_active",
+              "displayName": "is_active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "current_location",
+              "displayName": "current_location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "is_on_shift",
+              "displayName": "is_on_shift",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rating",
+              "displayName": "rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "completed_jobs",
+              "displayName": "completed_jobs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "current_request_id",
+              "displayName": "current_request_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "state1",
+              "displayName": "state1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "state2",
+              "displayName": "state2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "assigned_jobs_count",
+              "displayName": "assigned_jobs_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "max_daily_capacity",
+              "displayName": "max_daily_capacity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "paused_jobs_count",
+              "displayName": "paused_jobs_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "largeNumbersOutput": "text"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1536,
+        -48
+      ],
+      "id": "38d35458-aea0-4524-bbd3-49a9eb568227",
+      "name": "Insert rows in Master_status",
+      "credentials": {
+        "postgres": {
+          "id": "eV3tnvhftakbPLw5",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## \n\n**При изменении на сайте опций при регистрации (время, професии и тд) - сюда внести корректировки**",
+        "height": 320,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1232,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "2b7922a2-a99a-44de-8498-080fe4fc7278",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003674756007",
+        "text": "=📂 Master_id:\n{{ $('Edit Fields').item.json.master_id }}\n\nПринята заявка с сайта от:\n{{ $('Edit Fields').item.json.whatsapp }}\n\nИмя:\n{{ $('Edit Fields').item.json.vorname }}\n{{ $('Edit Fields').item.json.nachname }}\n\nЗаявка подана:\n{{ $('Edit Fields').item.json.registration_date }}  {{ $('Edit Fields').item.json.registration_time }}\n\nТип:\n{{ $('Edit Fields').item.json.registrationType }}\n\n______________\nBerufserfahrung:\n{{ $('Edit Fields').item.json.experience }}\n\n______________\nQualifikationen Zertifikate:\n{{ $('Edit Fields').item.json.qualifications }}\n\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML",
+          "message_thread_id": 3
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2032,
+        -48
+      ],
+      "id": "25e2f281-be0c-4a5f-b5a9-310b138211bb",
+      "name": "Send a text message",
+      "webhookId": "a76b0b9c-cb64-4417-90be-992c6cd69149",
+      "credentials": {
+        "telegramApi": {
+          "id": "vnO7G4wBjAjJPIkR",
+          "name": "Asasetcare1admin"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        992,
+        192
+      ],
+      "id": "532919a1-d199-430f-9d35-2b7f9e0e48d5",
+      "name": "Мастер с таким Whatsapp уже существует"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "assetcare24.org",
+            "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/122.0.0.0",
+            "content-length": "552",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "ru,en-US;q=0.9,en;q=0.8,de;q=0.7",
+            "content-type": "application/json",
+            "origin": "https://v0-assetcare24.vercel.app",
+            "priority": "u=1, i",
+            "referer": "https://v0-assetcare24.vercel.app/",
+            "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Opera\";v=\"122\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Linux\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "212.74.231.186",
+            "x-forwarded-host": "assetcare24.org",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "ec0f5bb1f6e4",
+            "x-real-ip": "212.74.231.186"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "vorname": "Otto",
+            "nachname": "Zimmerman",
+            "email": "email@email.com",
+            "whatsapp": "+49123456789",
+            "specializations": [
+              "elektrik",
+              "sicherheit",
+              "garten",
+              "heizung",
+              "allgemein",
+              "maler"
+            ],
+            "workingHours": {
+              "start": "08:00",
+              "end": "18:00"
+            },
+            "workingDays": {
+              "mo": true,
+              "di": true,
+              "mi": true,
+              "do": true,
+              "fr": true,
+              "sa": false,
+              "so": false
+            },
+            "serviceArea": "10115,10125,10126",
+            "hasVehicle": true,
+            "experience": "Berufserfahrung",
+            "qualifications": "Qualifikationen & Zertifikate",
+            "registrationType": "einzelhandwerker",
+            "timestamp": "2026-01-13T09:09:08.650Z",
+            "source": "website_registration"
+          },
+          "webhookUrl": "https://assetcare24.org/webhook-test/d509d181-13ab-4c34-b192-4b8994ec9e49",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in Masters",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Мастер с таким Whatsapp уже существует",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in Masters": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in Master_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in Master_status": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in Master_settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in Master_settings": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "628346a0-c41c-43c5-9664-e1f482ee9c1f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6e75fbfbd1b80d588e3fea682b7f76b7a34d3d3fd6575d31cf7e090a1a489005"
+  },
+  "id": "fK3Ndtffw3_3HOP5oMTy6",
+  "tags": []
+}

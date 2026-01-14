@@ -1,213 +1,183 @@
 # UTM Analytics Standard - AssetCare24
 
-**Версия:** 1.1
-**Дата:** 12 января 2026 г.
+**Версия:** 3.0 (MVP Simplified)
+**Дата:** 14 января 2026 г.
 **Автор:** AI Assistant
-**Изменения:** Добавлен опциональный параметр opt1 для дополнительной классификации
+**Изменения:** Упрощенный формат для MVP с надежными разделителями `||-` и `-||`
 
 ## 🎯 Обзор
 
-Этот документ определяет единый стандарт UTM-меток для AssetCare24, обеспечивающий:
+Этот документ определяет единый стандарт UTM-меток для AssetCare24, адаптированный под ограничения WhatsApp. Поскольку WhatsApp не поддерживает URL-параметры, используется формат с кодами в предзаполненном тексте сообщений.
+
+**Ключевые преимущества:**
 - Консистентную аналитику всех точек входа
 - Простую маршрутизацию заявок в n8n
 - Масштабируемость для будущих типов клиентов и мастеров
-- Совместимость с существующими решениями
+- Совместимость с WhatsApp Click-to-Chat
 
 ---
 
-## 📊 Структура UTM-меток
+## 📊 Структура кодов источника (MVP Simplified)
 
-### Базовый формат
+### Базовый формат кода
 ```
-utm_source={source}&utm_medium={medium}&utm_campaign={campaign}&utm_content={content}&utm_term={term}&opt1={option1}
+||-R-{SOURCE}-{USER_TYPE}-{CLIENT_TYPE}-{CODE}-||
 ```
 
-**Примечание:** Параметр `opt1` является опциональным и используется для дополнительной классификации (например, номер контракта, ID объекта и т.д.). Если не используется, устанавливается значение `base`.
+**Примеры:**
+- `||-R-QR-C-C-00001-||` — Контрактный клиент через QR-код
+- `||-R-WB-M-0-00000-||` — Мастер через веб-сайт
+
+**Где:**
+- `||-` — префикс для парсинга (фиксированный)
+- `R` — параметр действия: "регистрация" (фиксированный)
+- `{SOURCE}` — источник: `WB` (сайт) или `QR` (QR-коды)
+- `{USER_TYPE}` — тип пользователя: `C` (клиент) или `M` (мастер)
+- `{CLIENT_TYPE}` — тип клиента: `C` (контрактный) или `P` (публичный), для мастеров = `0`
+- `{CODE}` — 5-ти значный код (00000 по умолчанию)
+- `-||` — суффикс для парсинга (фиксированный)
 
 ### Определения параметров
 
-#### utm_source (Источник трафика)
-- **web** - Веб-сайт AssetCare24
-- **qr** - QR-коды на объектах
-- **social** - Социальные сети
-- **ad** - Рекламные платформы
-- **organic** - Органический поиск
-- **referral** - Реферальные ссылки
+#### {SOURCE} (Источник трафика)
+- **WB** - Веб-сайт AssetCare24
+- **QR** - QR-коды на объектах
 
-#### utm_medium (Тип трафика)
-**Для клиентов (клиентские заявки):**
-- **kunde** - Обычные клиентские заявки
-- **tenant** - Съемщики жилья (будущая функция)
-- **owner** - Собственники жилья (будущая функция)
-- **manager** - Управляющие компании (будущая функция)
+#### {USER_TYPE} (Тип пользователя)
+- **C** - Клиент (заявки на обслуживание)
+- **M** - Мастер (регистрация исполнителя)
 
-**Для мастеров (регистрации):**
-- **master** - Индивидуальные мастера
-- **freelancer** - Подрабатывающие мастера (будущая функция)
-- **company** - Компании с сотрудниками (будущая функция)
+#### {CLIENT_TYPE} (Тип клиента по договору)
+- **C** - Контрактный клиент (существующие договорные отношения)
+- **P** - Публичный клиент (новые клиенты без договора)
+- **0** - Для мастеров (не используется)
 
-#### utm_campaign (Кампания/точка входа)
-**Общие кампании:**
-- **main_page** - Главная страница
-- **services_page** - Страница услуг
-- **master_reg** - Регистрация мастера
-- **qr_contract** - Контрактные QR-коды
-- **qr_public** - Публичные QR-коды
-- **social_organic** - Органика в соцсетях
-- **ad_google** - Google Ads
-- **ad_facebook** - Facebook Ads
-- **ad_instagram** - Instagram Ads
-- **ad_tiktok** - TikTok Ads
-
-**Будущие кампании:**
-- **tenant_portal** - Портал для съемщиков
-- **owner_dashboard** - Дашборд для собственников
-- **manager_api** - API для управляющих компаний
-
-#### utm_content (Контент/вариант)
-- **button_primary** - Основная кнопка
-- **button_secondary** - Вторичная кнопка
-- **banner_top** - Верхний баннер
-- **banner_bottom** - Нижний баннер
-- **popup_exit** - Выходной попап
-- **qr_building_a** - QR код здания A
-- **qr_complex_1** - QR код комплекса 1
-
-#### utm_term (Ключевые слова)
-- Используется для отслеживания поисковых запросов
-- Для платной рекламы: ключевые слова кампании
-- Для органики: поисковые запросы
-
-#### opt1 (Опциональный параметр)
-- **base** - Значение по умолчанию (если параметр не используется)
-- **contract_123** - Номер контракта для контрактных клиентов
-- **building_a** - Идентификатор объекта/здания
-- **tenant_456** - ID арендатора для будущих функций
-- **company_xyz** - Код компании для корпоративных клиентов
-- Может содержать любой идентификатор для дополнительной классификации
+#### {CODE} (5-ти значный код)
+- **00000** - Значение по умолчанию
+- **00001-99999** - Специфические коды:
+  - Номер контрактного клиента
+  - Номер рекламной кампании
+  - ID объекта/здания
+  - Другие идентификаторы
 
 ---
 
-## 🔄 Маршрутизация заявок
+## 🔄 Маршрутизация заявок (n8n)
 
-### Логика определения типа заявки
+### Логика парсинга кода источника
 
-#### 1. Первичная классификация по utm_medium
+#### 1. Регулярное выражение для парсинга
 ```javascript
-if (utm_medium.includes('kunde') || utm_medium.includes('tenant') || utm_medium.includes('owner') || utm_medium.includes('manager')) {
-  // Это клиентская заявка
-  requestType = 'client';
-} else if (utm_medium.includes('master') || utm_medium.includes('freelancer') || utm_medium.includes('company')) {
-  // Это регистрация мастера
-  requestType = 'master_registration';
+// Функция парсинга R-кода (упрощенная версия для MVP)
+function parseSourceCode(message) {
+  const regex = /\|\|-R-([A-Z]{2})-([CM])-([CP0])-(\d{5})-\|\|/;
+  const match = message.match(regex);
+
+  if (!match) return null;
+
+  return {
+    source: match[1],      // 'WB' (сайт) или 'QR' (QR-код)
+    userType: match[2],    // 'C' (клиент) или 'M' (мастер)
+    clientType: match[3],  // 'C' (контрактный), 'P' (публичный) или '0' (для мастеров)
+    code: match[4]         // '00000' или специфический 5-ти значный код
+  };
 }
 ```
 
-#### 2. Детальная классификация клиентов
+#### 2. Определение типа запроса
 ```javascript
-switch(utm_medium) {
-  case 'kunde':
-    clientType = 'general_customer';
-    break;
-  case 'tenant':
-    clientType = 'renter';
-    break;
-  case 'owner':
-    clientType = 'property_owner';
-    break;
-  case 'manager':
-    clientType = 'property_manager';
-    break;
+function classifyRequest(parsedCode) {
+  if (!parsedCode) return 'unknown';
+
+  if (parsedCode.userType === 'C') {
+    // Клиентская заявка
+    return {
+      requestType: 'client_request',
+      source: parsedCode.source === 'WB' ? 'website' : 'qr_code',
+      clientCategory: parsedCode.clientType === 'C' ? 'contract' : 'public',
+      clientCode: parsedCode.code,
+      isContractClient: parsedCode.clientType === 'C'
+    };
+  } else if (parsedCode.userType === 'M') {
+    // Регистрация мастера
+    return {
+      requestType: 'master_registration',
+      source: parsedCode.source === 'WB' ? 'website' : 'qr_code',
+      masterCode: parsedCode.code
+    };
+  }
+
+  return 'unknown';
 }
 ```
 
-#### 3. Детальная классификация мастеров
+#### 3. Fallback при отсутствии кода
 ```javascript
-switch(utm_medium) {
-  case 'master':
-    masterType = 'individual_master';
-    break;
-  case 'freelancer':
-    masterType = 'part_time_master';
-    break;
-  case 'company':
-    masterType = 'company_with_employees';
-    break;
-}
-```
+function handleNoCodeFallback(message) {
+  // Если код не найден, предлагаем пользователю уточнить источник
+  const fallbackOptions = [
+    { text: 'Через QR-код', value: 'qr_code' },
+    { text: 'Через наш сайт', value: 'website' },
+    { text: 'Через рекламу', value: 'advertisement' },
+    { text: 'По рекомендации', value: 'referral' }
+  ];
 
-#### 4. Определение источника трафика
-```javascript
-switch(utm_source) {
-  case 'web':
-    trafficSource = 'website';
-    break;
-  case 'qr':
-    trafficSource = 'qr_code';
-    break;
-  case 'social':
-    trafficSource = 'social_media';
-    break;
-  case 'ad':
-    trafficSource = 'advertisement';
-    break;
-  case 'organic':
-    trafficSource = 'search_engine';
-    break;
+  return {
+    hasCode: false,
+    fallbackOptions: fallbackOptions,
+    suggestedResponse: 'Не смогли определить источник. Уточните, пожалуйста, как вы узнали о нас?'
+  };
 }
 ```
 
 ---
 
-## 📋 Примеры UTM-меток
+## 📋 Примеры кодов источника (MVP Simplified)
 
-### Текущие точки входа (MVP v1.2)
+### Текущие точки входа (MVP v3.0)
 
 #### Клиентские заявки:
 ```
-# Главная страница - основная кнопка
-utm_source=web&utm_medium=kunde&utm_campaign=main_page&utm_content=button_primary&opt1=base
+# Контрактный клиент через QR-код (код клиента 00001)
+||-R-QR-C-C-00001-||
 
-# Страница услуг - WhatsApp кнопка
-utm_source=web&utm_medium=kunde&utm_campaign=services_page&utm_content=whatsapp_button&opt1=base
+# Публичный клиент через QR-код (без специального кода)
+||-R-QR-C-P-00000-||
 
-# QR код на доме №1
-utm_source=qr&utm_medium=kunde&utm_campaign=qr_contract&utm_content=building_1&opt1=contract_001
+# Контрактный клиент через сайт (контракт №123)
+||-R-WB-C-C-00123-||
 
-# Контрактный клиент - дом №5, контракт №123
-utm_source=qr&utm_medium=kunde&utm_campaign=qr_contract&utm_content=building_5&opt1=contract_123
+# Публичный клиент через сайт (рекламная кампания №5)
+||-R-WB-C-P-00005-||
 ```
 
 #### Регистрация мастеров:
 ```
-# Кнопка "ALS HANDWERKER BEITRETEN"
-utm_source=web&utm_medium=master&utm_campaign=master_reg&utm_content=hero_button&opt1=base
+# Регистрация мастера через сайт (код специализации 00001)
+||-R-WB-M-0-00001-||
 
-# Финальная кнопка регистрации
-utm_source=web&utm_medium=master&utm_campaign=master_reg&utm_content=registration_complete&opt1=base
+# Регистрация мастера через QR-код (реферальный код 00234)
+||-R-QR-M-0-00234-||
 ```
 
-### Будущие точки входа (v2.0)
+### Полные примеры WhatsApp сообщений:
 
-#### Клиенты - разные типы:
+#### Клиентские сообщения:
 ```
-# Съемщик через портал арендаторов (квартира №15)
-utm_source=web&utm_medium=tenant&utm_campaign=tenant_portal&utm_content=service_request&opt1=apartment_15
+Hallo, ich brauche Hilfe bei der Reparatur
+Код источника: ||-R-QR-C-C-00001-||
 
-# Собственник через личный кабинет (дом №3)
-utm_source=web&utm_medium=owner&utm_campaign=owner_dashboard&utm_content=emergency_repair&opt1=building_3
-
-# Управляющая компания через API (комплекс А)
-utm_source=web&utm_medium=manager&utm_campaign=manager_api&utm_content=bulk_request&opt1=complex_a
+Bitte helfen Sie mir mit der Reparatur
+Код источника: ||-R-WB-C-P-00005-||
 ```
 
-#### Мастера - разные типы:
+#### Мастерские сообщения:
 ```
-# Регистрация компании (ООО "РемонтСервис")
-utm_source=web&utm_medium=company&utm_campaign=master_reg&utm_content=company_signup&opt1=company_remontservice
+Hallo, ich möchte mich als Handwerker registrieren
+Код источника: ||-R-WB-M-0-00001-||
 
-# Подработка для фрилансера (электрик Иван)
-utm_source=web&utm_medium=freelancer&utm_campaign=master_reg&utm_content=part_time_offer&opt1=electrician_ivan
+Ich interessiere mich für Handwerksarbeiten
+Код источника: ||-R-QR-M-0-00234-||
 ```
 
 ---
@@ -216,73 +186,112 @@ utm_source=web&utm_medium=freelancer&utm_campaign=master_reg&utm_content=part_ti
 
 ### Веб-сайт (Next.js)
 
-#### Компонент для генерации ссылок:
+#### Компонент для генерации WhatsApp ссылок:
 ```typescript
-interface UTMParams {
-  source: string;
-  medium: string;
-  campaign: string;
-  content?: string;
-  term?: string;
-  opt1?: string;
+interface SourceCodeParams {
+  source: 'WB' | 'QR';           // Только 2 источника для MVP
+  userType: 'C' | 'M';           // Клиент или мастер
+  clientType: 'C' | 'P' | '0';   // Тип клиента (0 для мастеров)
+  code: string;                  // 5-ти значный код (00000 по умолчанию)
 }
 
-function generateWhatsAppLink(phone: string, message: string, utm: UTMParams): string {
-  const baseUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-
-  // Устанавливаем значение по умолчанию для opt1
-  const utmWithDefaults = { opt1: 'base', ...utm };
-
-  const utmString = Object.entries(utmWithDefaults)
-    .filter(([_, value]) => value)
-    .map(([key, value]) => `utm_${key}=${encodeURIComponent(value)}`)
-    .join('&');
-
-  return `${baseUrl}&${utmString}`;
+function generateSourceCode(params: SourceCodeParams): string {
+  return `||-R-${params.source}-${params.userType}-${params.clientType}-${params.code.padStart(5, '0')}-||`;
 }
 
-// Пример использования
-const link = generateWhatsAppLink(
-  '4915510415655',
+function generateWhatsAppLink(phone: string, baseMessage: string, params: SourceCodeParams): string {
+  const sourceCode = generateSourceCode(params);
+  const fullMessage = `${baseMessage}\n\nКод источника: ${sourceCode}`;
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(fullMessage)}`;
+}
+
+// Примеры использования
+
+// Контрактный клиент через QR-код
+const contractClientLink = generateWhatsAppLink(
+  '491234567890',
   'Hallo, ich brauche Hilfe bei der Reparatur',
   {
-    source: 'web',
-    medium: 'kunde',
-    campaign: 'main_page',
-    content: 'button_primary'
+    source: 'QR',
+    userType: 'C',
+    clientType: 'C',
+    code: '00001'  // Номер контрактного клиента
   }
 );
+// Результат: https://wa.me/491234567890?text=Hallo%2C%20ich%20brauche%20Hilfe%20bei%20der%20Reparatur%0A%0A%D0%9A%D0%BE%D0%B4%20%D0%B8%D1%81%D1%82%D0%BE%D1%87%D0%BD%D0%B8%D0%BA%D0%B0%3A%20%7C%7C-R-QR-C-C-00001-%7C%7C
+
+// Мастер через сайт
+const masterLink = generateWhatsAppLink(
+  '491234567890',
+  'Hallo, ich möchte mich als Handwerker registrieren',
+  {
+    source: 'WB',
+    userType: 'M',
+    clientType: '0',
+    code: '00001'  // Код специализации
+  }
+);
+// Результат: https://wa.me/491234567890?text=Hallo%2C%20ich%20m%C3%B6chte%20mich%20als%20Handwerker%20registrieren%0A%0A%D0%9A%D0%BE%D0%B4%20%D0%B8%D1%81%D1%82%D0%BE%D1%87%D0%BD%D0%B8%D0%BA%D0%B0%3A%20%7C%7C-R-WB-M-0-00001-%7C%7C
 ```
 
 ### n8n Workflow
 
-#### Парсинг UTM-меток:
+#### Простой парсинг сообщения:
 ```javascript
-// Функция для парсинга UTM из сообщения
-function parseUTMFromMessage(message) {
-  const url = new URL(message.split(' ').find(word => word.includes('utm_')));
-  const params = new URLSearchParams(url.search);
+// Функция для парсинга упрощенного R-кода
+function parseWhatsAppMessage(message) {
+  // Ищем код между разделителями ||- и -||
+  const regex = /\|\|-R-([A-Z]{2})-([CM])-([CP0])-(\d{5})-\|\|/;
+  const match = message.match(regex);
+
+  if (!match) {
+    return {
+      hasValidCode: false,
+      requestType: 'unknown',
+      fallback: true
+    };
+  }
+
+  const parsedCode = {
+    source: match[1],      // 'WB' или 'QR'
+    userType: match[2],    // 'C' или 'M'
+    clientType: match[3],  // 'C', 'P' или '0'
+    code: match[4]         // '00000' или специфический код
+  };
+
+  // Определяем тип запроса
+  let requestType = 'unknown';
+  if (parsedCode.userType === 'C') {
+    requestType = 'client_request';
+  } else if (parsedCode.userType === 'M') {
+    requestType = 'master_registration';
+  }
 
   return {
-    source: params.get('utm_source'),
-    medium: params.get('utm_medium'),
-    campaign: params.get('utm_campaign'),
-    content: params.get('utm_content'),
-    term: params.get('utm_term'),
-    opt1: params.get('utm_opt1') || 'base'  // Опциональный параметр с fallback
+    hasValidCode: true,
+    requestType: requestType,
+    source: parsedCode.source === 'WB' ? 'website' : 'qr_code',
+    userType: parsedCode.userType === 'C' ? 'client' : 'master',
+    clientCategory: parsedCode.clientType === 'C' ? 'contract' : 'public',
+    clientCode: parsedCode.code,
+    originalCode: match[0]
   };
 }
 
-// Маршрутизация на основе UTM
-function routeRequest(utm) {
-  if (utm.medium.includes('kunde')) {
-    // Клиентская заявка
-    return routeClientRequest(utm);
-  } else if (utm.medium.includes('master')) {
-    // Регистрация мастера
-    return routeMasterRegistration(utm);
-  }
-}
+// Пример использования
+const message = "Hallo, ich brauche Hilfe\nКод источника: ||-R-QR-C-C-00001-||";
+const result = parseWhatsAppMessage(message);
+// Результат:
+// {
+//   hasValidCode: true,
+//   requestType: 'client_request',
+//   source: 'qr_code',
+//   userType: 'client',
+//   clientCategory: 'contract',
+//   clientCode: '00001',
+//   originalCode: '||-R-QR-C-C-00001-||'
+// }
 ```
 
 ---
@@ -292,52 +301,224 @@ function routeRequest(utm) {
 ### Метрики для отслеживания
 
 #### Конверсионные метрики:
-- **CTR (Click-through rate)** - процент кликов по ссылкам
-- **Conversion rate** - процент завершенных заявок
-- **Customer acquisition cost** - стоимость привлечения клиента
-- **Lifetime value** - пожизненная ценность клиента
+- **CTR (Click-through rate)** - процент кликов по WhatsApp ссылкам
+- **Conversion rate** - процент завершенных заявок от кликов
+- **Customer acquisition cost** - стоимость привлечения клиента по источникам
+- **Channel efficiency** - эффективность каналов (затраты/заявка)
+- **Source attribution accuracy** - точность определения источника трафика
 
 #### Источники трафика:
-- **Source performance** - эффективность каждого источника
-- **Campaign ROI** - окупаемость рекламных кампаний
-- **Channel attribution** - вклад каждого канала
+- **Source performance** - конверсии по каждому источнику (WEB, IG, QR, etc.)
+- **Campaign ROI** - окупаемость конкретных кампаний
+- **Channel attribution** - вклад каждого канала в общий трафик
+- **Code integrity** - процент корректно переданных кодов источника
 
 ### Google Analytics 4
 
 #### Рекомендуемые события:
 ```javascript
-// Отправка заявки
-gtag('event', 'generate_lead', {
-  campaign_source: utm.source,
-  campaign_medium: utm.medium,
-  campaign_name: utm.campaign,
-  campaign_content: utm.content,
-  custom_parameter_1: utm.opt1  // Дополнительная классификация
+// Клик по WhatsApp ссылке (на сайте)
+gtag('event', 'click', {
+  event_category: 'whatsapp',
+  event_label: 'contact_button',
+  custom_parameter_source: 'WEB',  // Источник
+  custom_parameter_campaign: 'MAIN' // Кампания
 });
 
-// Регистрация мастера
-gtag('event', 'sign_up', {
-  method: 'whatsapp_verification',
-  user_type: 'master',
-  campaign_source: utm.source,
-  custom_parameter_1: utm.opt1
+// Получение сообщения в n8n
+gtag('event', 'whatsapp_message_received', {
+  source: parsedData.source,      // 'WEB', 'IG', 'QR'
+  campaign: parsedData.campaign,  // 'MAIN', 'SERV', 'QRCO'
+  has_valid_code: parsedData.hasValidCode,
+  contract_id: parsedData.additionalParams.contract || null
 });
 
-// Контрактные метрики (для будущих функций)
+// Создание заявки
+gtag('event', 'request_created', {
+  source: parsedData.source,
+  campaign: parsedData.campaign,
+  request_type: 'client_request', // или 'master_registration'
+  contract_id: parsedData.additionalParams.contract || null,
+  building_id: parsedData.additionalParams.building || null
+});
+
+// Контрактные метрики
 gtag('event', 'contract_interaction', {
-  contract_id: utm.opt1,
-  interaction_type: utm.campaign,
-  source: utm.source
+  contract_id: parsedData.additionalParams.contract,
+  interaction_type: parsedData.campaign,
+  source: parsedData.source,
+  building: parsedData.additionalParams.building
 });
+```
+
+### Отчеты в Supabase
+
+#### SQL для аналитики источников:
+```sql
+-- Эффективность источников трафика
+SELECT
+  source,
+  campaign,
+  COUNT(*) as total_requests,
+  COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_requests,
+  ROUND(
+    COUNT(CASE WHEN status = 'completed' THEN 1 END)::numeric /
+    COUNT(*)::numeric * 100, 2
+  ) as completion_rate
+FROM requests r
+JOIN clients c ON r.client_id = c.id
+WHERE c.source IS NOT NULL
+GROUP BY source, campaign
+ORDER BY total_requests DESC;
+
+-- Анализ контрактных клиентов
+SELECT
+  contract_id,
+  COUNT(*) as requests_count,
+  AVG(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completion_rate,
+  MAX(created_at) as last_request_date
+FROM (
+  SELECT
+    (meta_data->>'contract_id') as contract_id,
+    status,
+    created_at
+  FROM requests r
+  JOIN clients c ON r.client_id = c.id
+  WHERE c.meta_data->>'contract_id' IS NOT NULL
+) contract_requests
+GROUP BY contract_id
+ORDER BY requests_count DESC;
+```
+
+---
+
+## 🚀 Внедрение в сайт (Next.js)
+
+### 1. Создание утилиты для генерации кодов
+
+Создайте файл `lib/source-codes.ts`:
+
+```typescript
+export interface SourceCodeParams {
+  source: 'WEB' | 'IG' | 'FB' | 'TT' | 'GG' | 'QR' | 'OR' | 'LI' | 'YT' | 'EM' | 'RF';
+  campaign: 'MAIN' | 'SERV' | 'LAND' | 'QRCO' | 'QRPU' | 'SOCO' | 'ADGO' | 'ADFB' | 'ADIG' | 'ADTT' | 'MREG' | 'MREF' | 'TPOR' | 'ODSH' | 'MAPI';
+  additionalParams?: {
+    contract?: string;
+    building?: string;
+    tenant?: string;
+    company?: string;
+  };
+}
+
+export function generateSourceCode(params: SourceCodeParams): string {
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const nonce = Math.random().toString(36).substr(2, 4).toUpperCase();
+
+  return `SRC-${params.source}-${params.campaign}-${date}-${nonce}`;
+}
+
+export function generateWhatsAppLink(
+  phone: string,
+  baseMessage: string,
+  params: SourceCodeParams
+): string {
+  const sourceCode = generateSourceCode(params);
+
+  let additionalText = '';
+  if (params.additionalParams) {
+    if (params.additionalParams.contract) {
+      additionalText += ` [CONTRACT:${params.additionalParams.contract}]`;
+    }
+    if (params.additionalParams.building) {
+      additionalText += ` [BUILDING:${params.additionalParams.building}]`;
+    }
+    if (params.additionalParams.tenant) {
+      additionalText += ` [TENANT:${params.additionalParams.tenant}]`;
+    }
+    if (params.additionalParams.company) {
+      additionalText += ` [COMPANY:${params.additionalParams.company}]`;
+    }
+  }
+
+  const fullMessage = `${baseMessage}\n\nКод источника: ${sourceCode}${additionalText}`;
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(fullMessage)}`;
+}
+```
+
+### 2. Обновление компонентов
+
+Пример обновления кнопки на главной странице:
+
+```tsx
+// components/hero-section.tsx
+import { generateWhatsAppLink } from '@/lib/source-codes';
+
+export function HeroSection() {
+  const whatsappLink = generateWhatsAppLink(
+    '491234567890', // Ваш WhatsApp номер
+    'Hallo, ich brauche Hilfe bei der Reparatur',
+    {
+      source: 'WEB',
+      campaign: 'MAIN'
+    }
+  );
+
+  return (
+    <a
+      href={whatsappLink}
+      className="bg-green-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-600 transition-colors"
+      onClick={() => {
+        // GA4 событие
+        gtag('event', 'click', {
+          event_category: 'whatsapp',
+          event_label: 'hero_button',
+          custom_parameter_source: 'WEB',
+          custom_parameter_campaign: 'MAIN'
+        });
+      }}
+    >
+      WhatsApp Nachricht senden
+    </a>
+  );
+}
+```
+
+### 3. Тестирование
+
+#### Проверка генерации ссылок:
+```bash
+# Запустите сайт и перейдите на utm-test страницу
+# Проверьте генерацию различных типов ссылок
+curl "http://localhost:3000/utm-test"
+```
+
+#### Проверка парсинга в n8n:
+```javascript
+// Тестовый код для n8n
+const testMessage = "Hallo, ich brauche Hilfe bei der Reparatur\n\nКод источника: SRC-WEB-MAIN-20260114-AB3F [CONTRACT:001]";
+
+const parsed = parseWhatsAppMessage(testMessage);
+console.log(parsed);
+// Ожидаемый результат:
+// {
+//   sourceCode: "SRC-WEB-MAIN-20260114-AB3F",
+//   source: "WEB",
+//   campaign: "MAIN",
+//   date: "20260114",
+//   nonce: "AB3F",
+//   additionalParams: { contract: "001" },
+//   hasValidCode: true
+// }
 ```
 
 ---
 
 ## 🔮 Планы развития
 
-### Фаза 2: Расширение классификации
+### Фаза 2: Расширение классификации (Q2 2026)
 
-#### Новые типы клиентов (Q2 2026):
+#### Новые типы клиентов:
 - **Tenants (съемщики)** - через специализированный портал арендаторов
 - **Property Owners (собственники)** - через личный кабинет собственника
 - **Property Managers (управляющие)** - через API интеграцию
@@ -345,7 +526,6 @@ gtag('event', 'contract_interaction', {
 #### Новые типы мастеров (Q3 2026):
 - **Freelancers (фрилансеры)** - мастера, подрабатывающие неполный день
 - **Companies (компании)** - организации с штатными сотрудниками
-- **Specialized teams (специализированные бригады)** - для крупных проектов
 
 ### Фаза 3: AI-маршрутизация (Q4 2026)
 
@@ -361,10 +541,19 @@ gtag('event', 'contract_interaction', {
 
 **Технический руководитель:** Artem Tihonov
 **Аналитика:** AI Assistant
-**Документация:** Обновляется в `mvp/utm_analytics_standard.md`
+**Документация:** `mvp/utm_analytics_standard.md`
 
 ---
 
-**Этот стандарт обеспечивает масштабируемость и консистентность аналитики AssetCare24 на всех этапах развития проекта.**</contents>
+## ✅ Ключевые преимущества упрощенного стандарта
+
+1. **MVP-оптимизация** - только необходимые параметры для запуска
+2. **Надежные разделители** - `||-` и `-||` обеспечивают точное распознавание
+3. **Простота парсинга** - одна регулярка для всех случаев
+4. **Отказоустойчивость** - легко определить наличие/отсутствие кода
+5. **Масштабируемость** - легко расширить при необходимости
+6. **Читаемость** - код легко понять и отдебажить
+
+**Этот стандарт идеален для MVP: простота + надежность + возможность расширения.**</contents>
 </xai:function_call<parameter name="write">
 <parameter name="file_path">/home/aaa/Projects/n8n/assetcare24/mvp/utm_analytics_standard.md

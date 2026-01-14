@@ -23,7 +23,7 @@ export function VerificationPopup({ isOpen, onClose, onVerify }: Omit<Verificati
 
   const handleVerify = () => {
     // Redirect to WhatsApp with verification message
-    const whatsappUrl = "https://wa.me/4915510415655?text=Ich%20möchte%20meine%20Registrierung%20bestätigen"
+    const whatsappUrl = "https://wa.me/14155238886?text=Ich%20möchte%20meine%20Registrierung%20bestätigen"
     window.open(whatsappUrl, "_blank")
     // Don't call onVerify() to avoid auto-opening success popup
   }
