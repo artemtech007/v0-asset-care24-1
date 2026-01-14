@@ -9,43 +9,47 @@
 
 **Trigger:** `Webhook (POST)` от Twilio.
 
-**Важно:** Twilio отправляет сообщения 2-3 раза (SMS webhook + Event Streams). Нужно дедуплицировать!
+**Важно:** Twilio отправляет сообщения 2-3 раза. Используем простую дедупликацию!
 
 **Logic:**
-1.  **Дедупликация (важный шаг!):**
-    *   Извлечь `MessageSid` из данных
-    *   Проверить в Supabase таблице `processed_messages` по `message_sid`
-    *   Если уже обработано → пропустить (Return early)
-    *   Если новый → сохранить в `processed_messages` и продолжить
-
-2.  **Определить формат вебхука:**
-    *   **SMS Webhook:** проверить `SmsMessageSid` (старый формат)
-    *   **Event Streams:** проверить `data.messageSid` (новый Cloud Events формат)
-
-3.  **Извлечь данные:**
-    *   `From` (Телефон): `whatsapp:+79196811458`
-    *   `Body` (Текст): "Hallo! Bitte senden..."
-    *   `ProfileName` (Имя в WhatsApp): "art"
-    *   `MessageSid` (ID сообщения): "SM6fdb2d3eb1f28b332a898ccc0d1b321e"
-
-4.  **Парсинг R-кода:**
+1.  **Извлечь MessageSid:**
     ```javascript
-    const regex = /\|\|-R-([A-Z]{2})-([CM])-([CP0])-(\d{5})-\|\|/;
-    const match = messageBody.match(regex);
-    if (match) {
-      return {
-        source: match[1],    // 'WB' или 'QR'
-        userType: match[2],  // 'C' или 'M'
-        clientType: match[3], // 'C', 'P' или '0'
-        code: match[4]       // '00000' или специфический
-      };
+    // Function Node: Extract MessageSid
+    function extractMessageSid(data) {
+      if (data.SmsMessageSid) return data.SmsMessageSid;
+      if (data.data && data.data.messageSid) return data.data.messageSid;
+      return null;
     }
+    return { messageSid: extractMessageSid($json) };
     ```
 
-5.  **Маршрутизация (Switch):**
-    *   *Если есть валидный R-код* → Workflow "Process Request"
-    *   *Если нет R-кода* → Workflow "Fallback" (спросить источник)
-    *   *Если медиа без текста* → Workflow "Media Processing"
+2.  **Дедупликация (Postgres Node):**
+    ```sql
+    SELECT EXISTS(
+        SELECT 1 FROM processed_messages
+        WHERE message_sid = '{{ $json.messageSid }}'
+    ) as already_processed;
+    ```
+
+3.  **Маршрутизация (Switch Node):**
+    *   `already_processed = true` → **СТОП** (дубликат)
+    *   `already_processed = false` → Продолжить обработку
+
+4.  **Отметить как обработанное (Postgres Node):**
+    ```sql
+    INSERT INTO processed_messages (message_sid)
+    VALUES ('{{ $json.messageSid }}')
+    ON CONFLICT (message_sid) DO NOTHING;
+    ```
+
+5.  **Извлечь данные и парсинг R-кода:**
+    *   `From` (Телефон), `Body` (Текст), `ProfileName`
+    *   Парсинг: `/\|\|-R-([A-Z]{2})-([CM])-([CP0])-(\d{5})-\|\|/`
+
+6.  **Финальная маршрутизация:**
+    *   *Валидный R-код* → Process Request
+    *   *Нет R-кода* → Fallback (спросить источник)
+    *   *Медиа без текста* → Media Processing
 
 ---
 

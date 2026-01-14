@@ -418,17 +418,9 @@ INSERT INTO public.master_settings (
 -- 13. PROCESSED MESSAGES TABLE (Message deduplication)
 -- =====================================================
 CREATE TABLE public.processed_messages (
-    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    message_sid text UNIQUE NOT NULL,
-    source text NOT NULL CHECK (source IN ('sms_webhook', 'event_streams')),
-    processed_at timestamptz DEFAULT now(),
-    webhook_data jsonb,
-    duplicate_count integer DEFAULT 1
+    message_sid text PRIMARY KEY,              -- MessageSid от Twilio
+    processed_at timestamptz DEFAULT now()     -- Время первой обработки
 );
-
--- Indexes for processed_messages
-CREATE UNIQUE INDEX idx_processed_messages_sid ON processed_messages(message_sid);
-CREATE INDEX idx_processed_messages_processed_at ON processed_messages(processed_at);
 
 -- =====================================================
 -- END OF SCHEMA

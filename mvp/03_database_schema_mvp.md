@@ -293,21 +293,20 @@ WHERE master_id = 'mid_wa_49123456789';
 | `updated_at` | timestamptz | default `now()` | Дата обновления |
 
 ### 1.12 `processed_messages` (Дедупликация сообщений)
-Таблица для предотвращения повторной обработки одинаковых сообщений от Twilio.
+Простая таблица для предотвращения повторной обработки одинаковых сообщений от Twilio.
 
 | Column | Type | Constraints | Описание |
 | :--- | :--- | :--- | :--- |
-| `id` | uuid | PK, default `gen_random_uuid()` | ID записи |
-| `message_sid` | text | UNIQUE NOT NULL | MessageSid от Twilio |
-| `source` | text | NOT NULL | Источник: 'sms_webhook' или 'event_streams' |
+| `message_sid` | text | PK | MessageSid от Twilio (уникальный идентификатор) |
 | `processed_at` | timestamptz | default `now()` | Время первой обработки |
-| `webhook_data` | jsonb | | Полные данные вебхука для отладки |
-| `duplicate_count` | integer | default 1 | Количество полученных дубликатов |
 
-**Индексы:**
+**Примечание:** Для MVP достаточно только этих двух полей. В будущем можно перейти на Redis с TTL=1час.
 ```sql
-CREATE UNIQUE INDEX idx_processed_messages_sid ON processed_messages(message_sid);
-CREATE INDEX idx_processed_messages_processed_at ON processed_messages(processed_at);
+-- Простая проверка существования
+SELECT EXISTS(
+    SELECT 1 FROM processed_messages
+    WHERE message_sid = 'SM6fdb2d3eb1f28b332a898ccc0d1b321e'
+) as already_processed;
 ```
 
 ---

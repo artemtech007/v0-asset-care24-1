@@ -1,115 +1,94 @@
-# Руководство по дедупликации вебхуков Twilio
+# Руководство по дедупликации вебхуков Twilio (упрощенное)
 
 ## 🎯 Проблема
 
-Twilio отправляет сообщения WhatsApp **2-3 раза**:
-1. **SMS Webhook** (старый формат) - приходит первым
-2. **Event Streams** (новый Cloud Events формат) - может приходить 1-2 раза
+Twilio отправляет сообщения WhatsApp **2-3 раза** - это нормально для их инфраструктуры.
 
-Это приводит к повторной обработке одних и тех же сообщений.
+## 🔧 Решение: Простой EXISTS запрос
 
-## 🔧 Решение: Таблица `processed_messages`
-
-### Структура таблицы
+### Структура таблицы (MVP версия)
 ```sql
 CREATE TABLE processed_messages (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    message_sid text UNIQUE NOT NULL,           -- ID сообщения от Twilio
-    source text NOT NULL,                       -- 'sms_webhook' или 'event_streams'
-    processed_at timestamptz DEFAULT now(),     -- Время первой обработки
-    webhook_data jsonb,                         -- Полные данные для отладки
-    duplicate_count integer DEFAULT 1           -- Счетчик дубликатов
+    message_sid text PRIMARY KEY,              -- MessageSid от Twilio
+    processed_at timestamptz DEFAULT now()     -- Время первой обработки
 );
 ```
 
-### Логика дедупликации в n8n
+### Логика дедупликации в n8n (рекомендуемый способ)
 
-#### 1. Определить формат вебхука
+#### 1. Извлечь MessageSid из данных
 ```javascript
-// Функция определения типа вебхука
-function getWebhookType(data) {
-  if (data.SmsMessageSid) {
-    return 'sms_webhook';
-  } else if (data.specversion === '1.0' && data.type === 'com.twilio.messaging.inbound-message.received') {
-    return 'event_streams';
-  }
-  return 'unknown';
-}
-
-// Извлечь MessageSid
-function getMessageSid(data) {
+// Function Node: Extract MessageSid
+function extractMessageSid(data) {
+  // SMS Webhook формат
   if (data.SmsMessageSid) return data.SmsMessageSid;
+
+  // Event Streams формат
   if (data.data && data.data.messageSid) return data.data.messageSid;
+
   return null;
 }
+
+const messageSid = extractMessageSid($json);
+return { messageSid };
 ```
 
-#### 2. Проверить и сохранить в базе
+#### 2. Проверить EXISTS (Postgres Node)
+```sql
+-- Query: Check if message already processed
+SELECT EXISTS(
+    SELECT 1 FROM processed_messages
+    WHERE message_sid = '{{ $json.messageSid }}'
+) as already_processed;
+```
+
+#### 3. Вставить при первой обработке (Postgres Node)
+```sql
+-- Query: Mark as processed (только если не дубликат)
+INSERT INTO processed_messages (message_sid)
+VALUES ('{{ $json.messageSid }}')
+ON CONFLICT (message_sid) DO NOTHING;
+```
+
+#### 4. Маршрутизация (Switch Node)
+```
+- already_processed = true → Пропустить (дубликат)
+- already_processed = false → Обработать дальше
+```
+
+## 📊 Зачем разделение на 'sms_webhook' и 'event_streams'?
+
+**Ответ:** Для MVP - НЕ НУЖНО! 
+
+Разделение нужно только если:
+- Вы анализируете надежность разных форматов
+- Хотите A/B тестирование вебхуков
+- Планируете постепенный переход с SMS на Event Streams
+
+Для MVP достаточно проверять только по `message_sid` - он одинаковый в обоих форматах.
+
+## 🚀 Будущее: Redis для дедупликации
+
 ```javascript
-// n8n Function Node: Deduplication Check
-async function checkDuplicate(items) {
-  const results = [];
+// Для продакшена лучше Redis с TTL=1час
+const redis = require('redis');
+const client = redis.createClient();
 
-  for (const item of items) {
-    const data = item.json;
-    const webhookType = getWebhookType(data);
-    const messageSid = getMessageSid(data);
-
-    if (!messageSid) {
-      // Неизвестный формат - пропустить
-      results.push({ json: { ...item.json, duplicate: true, reason: 'no_message_sid' } });
-      continue;
-    }
-
-    try {
-      // Проверить, есть ли уже такая запись
-      const existing = await supabase
-        .from('processed_messages')
-        .select('id, duplicate_count')
-        .eq('message_sid', messageSid)
-        .single();
-
-      if (existing.data) {
-        // Уже обработано - увеличить счетчик дубликатов
-        await supabase
-          .from('processed_messages')
-          .update({
-            duplicate_count: existing.data.duplicate_count + 1,
-            webhook_data: data
-          })
-          .eq('message_sid', messageSid);
-
-        results.push({ json: { ...item.json, duplicate: true, reason: 'already_processed' } });
-      } else {
-        // Новое сообщение - сохранить и обработать
-        await supabase
-          .from('processed_messages')
-          .insert({
-            message_sid: messageSid,
-            source: webhookType,
-            webhook_data: data
-          });
-
-        results.push({ json: { ...item.json, duplicate: false, message_sid: messageSid } });
-      }
-    } catch (error) {
-      console.error('Deduplication error:', error);
-      results.push({ json: { ...item.json, duplicate: true, reason: 'database_error' } });
-    }
-  }
-
-  return results;
+// Проверить и установить с TTL
+const isDuplicate = await client.exists(`msg:${messageSid}`);
+if (!isDuplicate) {
+  await client.setex(`msg:${messageSid}`, 3600, '1'); // 1 час TTL
 }
-
-return checkDuplicate($input.all());
 ```
 
-#### 3. Фильтрация дубликатов
-```
-Switch Node:
-- duplicate = false → Продолжить обработку
-- duplicate = true → Пропустить (можно логировать)
-```
+## ✅ Простая реализация для MVP
+
+1. **Создать таблицу** `processed_messages` (message_sid PRIMARY KEY)
+2. **Добавить Postgres Node** с `EXISTS` запросом в начало workflow
+3. **Добавить Switch Node** для маршрутизации
+4. **Добавить INSERT** после успешной обработки
+
+Готово! 🎉
 
 ## 📊 Мониторинг дубликатов
 
