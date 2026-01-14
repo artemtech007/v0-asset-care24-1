@@ -48,7 +48,7 @@
 📄 **Документация:**
 *   [03_database_schema_mvp.md](./03_database_schema_mvp.md) — Описание схемы таблиц.
 *   [database_schema_migration_guide.md](./database_schema_migration_guide.md) — **Регламент** безопасных изменений схемы БД.
-*   [init_database_v2.1.sql](./init_database_v2.1.sql) — **Готовый SQL скрипт** для создания БД (v2.1 с PostGIS).
+*   [init_database_v2.1.sql](./init_database_v2.1.sql) — **Готовый SQL скрипт** для создания БД (v2.2 с дедупликацией вебхуков).
 *   [04_storage_structure.md](./04_storage_structure.md) — Структура папок в S3 (MinIO).
 
 ---
@@ -63,6 +63,7 @@
 
 📄 **Документация:**
 *   [05_n8n_workflows.md](./05_n8n_workflows.md) — Общее описание всех сценариев.
+*   [webhook_deduplication_guide.md](./webhook_deduplication_guide.md) — **Важно:** Дедупликация вебхуков Twilio.
 *   [workflows/01_router.md](./workflows/01_router.md) — Детальная спецификация Роутера.
 *   [admin_dashboard_plan.md](./admin_dashboard_plan.md) — План реализации админ-панели.
 *   [git_github_workflow.md](./git_github_workflow.md) — Полное руководство по работе с Git и GitHub.

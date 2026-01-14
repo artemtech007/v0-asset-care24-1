@@ -5,18 +5,47 @@
 ---
 
 ## Workflow 1: Входящее сообщение (Webhook Router)
-*Единая точка входа для всех сообщений от Twilio.*
+*Единая точка входа для всех сообщений от Twilio с дедупликацией.*
 
 **Trigger:** `Webhook (POST)` от Twilio.
+
+**Важно:** Twilio отправляет сообщения 2-3 раза (SMS webhook + Event Streams). Нужно дедуплицировать!
+
 **Logic:**
-1.  **Получить данные:** `From` (Телефон), `Body` (Текст), `MediaUrl` (Фото/Аудио).
-2.  **Проверить пользователя (Supabase):**
-    *   Ищем по `phone`.
-    *   Если нет -> Создаем "черновик" пользователя (Role: Client).
-3.  **Маршрутизация (Switch):**
-    *   *Если это кнопка/команда* -> Переслать в Workflow "Menu Action".
-    *   *Если это медиа или текст* -> Переслать в Workflow "Process Request".
-    *   *Если статус пользователя "registration_pending"* -> Переслать в Workflow "Registration".
+1.  **Дедупликация (важный шаг!):**
+    *   Извлечь `MessageSid` из данных
+    *   Проверить в Supabase таблице `processed_messages` по `message_sid`
+    *   Если уже обработано → пропустить (Return early)
+    *   Если новый → сохранить в `processed_messages` и продолжить
+
+2.  **Определить формат вебхука:**
+    *   **SMS Webhook:** проверить `SmsMessageSid` (старый формат)
+    *   **Event Streams:** проверить `data.messageSid` (новый Cloud Events формат)
+
+3.  **Извлечь данные:**
+    *   `From` (Телефон): `whatsapp:+79196811458`
+    *   `Body` (Текст): "Hallo! Bitte senden..."
+    *   `ProfileName` (Имя в WhatsApp): "art"
+    *   `MessageSid` (ID сообщения): "SM6fdb2d3eb1f28b332a898ccc0d1b321e"
+
+4.  **Парсинг R-кода:**
+    ```javascript
+    const regex = /\|\|-R-([A-Z]{2})-([CM])-([CP0])-(\d{5})-\|\|/;
+    const match = messageBody.match(regex);
+    if (match) {
+      return {
+        source: match[1],    // 'WB' или 'QR'
+        userType: match[2],  // 'C' или 'M'
+        clientType: match[3], // 'C', 'P' или '0'
+        code: match[4]       // '00000' или специфический
+      };
+    }
+    ```
+
+5.  **Маршрутизация (Switch):**
+    *   *Если есть валидный R-код* → Workflow "Process Request"
+    *   *Если нет R-кода* → Workflow "Fallback" (спросить источник)
+    *   *Если медиа без текста* → Workflow "Media Processing"
 
 ---
 

@@ -1,6 +1,7 @@
 -- =====================================================
--- AssetCare24 MVP Database Schema v2.1 DEBUG
+-- AssetCare24 MVP Database Schema v2.2 DEBUG
 -- Separate tables for clients and masters
+-- Added processed_messages for webhook deduplication
 -- Requires PostGIS extension for geography types
 -- CHECK constraints removed for easier debugging
 -- =====================================================
@@ -325,6 +326,7 @@ ALTER TABLE public.client_status ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.master_status ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.master_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.processed_messages ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
 -- BASIC RLS POLICIES (to be expanded)
@@ -411,6 +413,22 @@ INSERT INTO public.master_settings (
     -- специализации
     true, true  -- электрик и сантехник
 );
+
+-- =====================================================
+-- 13. PROCESSED MESSAGES TABLE (Message deduplication)
+-- =====================================================
+CREATE TABLE public.processed_messages (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    message_sid text UNIQUE NOT NULL,
+    source text NOT NULL CHECK (source IN ('sms_webhook', 'event_streams')),
+    processed_at timestamptz DEFAULT now(),
+    webhook_data jsonb,
+    duplicate_count integer DEFAULT 1
+);
+
+-- Indexes for processed_messages
+CREATE UNIQUE INDEX idx_processed_messages_sid ON processed_messages(message_sid);
+CREATE INDEX idx_processed_messages_processed_at ON processed_messages(processed_at);
 
 -- =====================================================
 -- END OF SCHEMA

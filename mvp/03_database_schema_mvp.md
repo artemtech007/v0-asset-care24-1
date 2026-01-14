@@ -292,6 +292,24 @@ WHERE master_id = 'mid_wa_49123456789';
 | `created_at` | timestamptz | default `now()` | Дата создания |
 | `updated_at` | timestamptz | default `now()` | Дата обновления |
 
+### 1.12 `processed_messages` (Дедупликация сообщений)
+Таблица для предотвращения повторной обработки одинаковых сообщений от Twilio.
+
+| Column | Type | Constraints | Описание |
+| :--- | :--- | :--- | :--- |
+| `id` | uuid | PK, default `gen_random_uuid()` | ID записи |
+| `message_sid` | text | UNIQUE NOT NULL | MessageSid от Twilio |
+| `source` | text | NOT NULL | Источник: 'sms_webhook' или 'event_streams' |
+| `processed_at` | timestamptz | default `now()` | Время первой обработки |
+| `webhook_data` | jsonb | | Полные данные вебхука для отладки |
+| `duplicate_count` | integer | default 1 | Количество полученных дубликатов |
+
+**Индексы:**
+```sql
+CREATE UNIQUE INDEX idx_processed_messages_sid ON processed_messages(message_sid);
+CREATE INDEX idx_processed_messages_processed_at ON processed_messages(processed_at);
+```
+
 ---
 
 ## 2. Представления (Views) для Админки
