@@ -45,27 +45,30 @@
 5.  **Обработка данных (Function Node):**
     ```javascript
     // Function Node: Parse WA Data and R-Code
+    // Поддерживает оба формата: SMS webhook (From/Body) и Event Streams (from/body)
     function processWAData(data) {
       // 1. Копия оригинального JSON
       const result = { ...data };
 
-      // 2. Обработка поля "from" -> wa_id_plus и wa_id
-      if (data.From && typeof data.From === 'string') {
+      // 2. Обработка поля "from"/"From" -> wa_id_plus и wa_id
+      const fromField = data.From || data.from; // Поддержка обоих форматов
+      if (fromField && typeof fromField === 'string') {
         // Из "whatsapp:+79196811458" получаем "+79196811458" и "79196811458"
-        const phoneMatch = data.From.match(/whatsapp:\+(\d+)/);
+        const phoneMatch = fromField.match(/whatsapp:\+(\d+)/);
         if (phoneMatch) {
           result.wa_id_plus = '+' + phoneMatch[1];  // "+79196811458"
           result.wa_id = phoneMatch[1];              // "79196811458"
         }
       }
 
-      // 3. Обработка поля "body" - поиск R-кода
+      // 3. Обработка поля "body"/"Body" - поиск и разбор R-кода
+      const bodyField = data.Body || data.body; // Поддержка обоих форматов
       result.has_code = false;
 
-      if (data.Body && typeof data.Body === 'string') {
+      if (bodyField && typeof bodyField === 'string') {
         // Ищем код между ||- и -|| (ровно 14 символов между ними)
         const codeRegex = /\|\|-(.+?)-\|\|/g;
-        const matches = data.Body.match(codeRegex);
+        const matches = bodyField.match(codeRegex);
 
         if (matches && matches.length > 0) {
           // Берем первый найденный код

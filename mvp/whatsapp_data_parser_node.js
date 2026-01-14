@@ -6,9 +6,11 @@ function processWAData(data) {
   const result = { ...data };
 
   // 2. Обработка поля "from" -> wa_id_plus и wa_id
-  if (data.From && typeof data.From === 'string') {
+  // Поддержка обоих форматов: "From" (SMS webhook) и "from" (Event Streams)
+  const fromField = data.From || data.from;
+  if (fromField && typeof fromField === 'string') {
     // Из "whatsapp:+79196811458" получаем "+79196811458" и "79196811458"
-    const phoneMatch = data.From.match(/whatsapp:\+(\d+)/);
+    const phoneMatch = fromField.match(/whatsapp:\+(\d+)/);
     if (phoneMatch) {
       result.wa_id_plus = '+' + phoneMatch[1];  // "+79196811458"
       result.wa_id = phoneMatch[1];              // "79196811458"
@@ -16,12 +18,14 @@ function processWAData(data) {
   }
 
   // 3. Обработка поля "body" - поиск и разбор R-кода
+  // Поддержка обоих форматов: "Body" (SMS webhook) и "body" (Event Streams)
+  const bodyField = data.Body || data.body;
   result.has_code = false;
 
-  if (data.Body && typeof data.Body === 'string') {
+  if (bodyField && typeof bodyField === 'string') {
     // Ищем код между ||- и -|| (ровно 14 символов между ними)
     const codeRegex = /\|\|-(.+?)-\|\|/g;
-    const matches = data.Body.match(codeRegex);
+    const matches = bodyField.match(codeRegex);
 
     if (matches && matches.length > 0) {
       // Берем первый найденный код
@@ -56,7 +60,18 @@ const results = items.map(item => ({
 
 return results;
 
-// Пример входа (SMS webhook):
+// Пример входа (Event Streams формат):
+// {
+//   "specversion": "1.0",
+//   "timestamp": "2026-01-14T13:51:11.000Z",
+//   "accountSid": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+//   "messageSid": "SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+//   "body": "Hallo! Bitte senden Sie diese Nachricht mit dem Registrierungscode, ohne ihn zu bearbeiten!\n\n||-R-WB-C-P-0000S-||\n\nDanke!",
+//   "from": "whatsapp:+79196811458",
+//   "id": "EZxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+// }
+
+// Или SMS webhook формат:
 // {
 //   "SmsMessageSid": "SM6fdb2d3eb1f28b332a898ccc0d1b321e",
 //   "From": "whatsapp:+79196811458",
