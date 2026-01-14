@@ -42,13 +42,68 @@
     ON CONFLICT (message_sid) DO NOTHING;
     ```
 
-5.  **Извлечь данные и парсинг R-кода:**
-    *   `From` (Телефон), `Body` (Текст), `ProfileName`
-    *   Парсинг: `/\|\|-R-([A-Z]{2})-([CM])-([CP0])-(\d{5})-\|\|/`
+5.  **Обработка данных (Function Node):**
+    ```javascript
+    // Function Node: Parse WA Data and R-Code
+    function processWAData(data) {
+      // 1. Копия оригинального JSON
+      const result = { ...data };
 
-6.  **Финальная маршрутизация:**
-    *   *Валидный R-код* → Process Request
-    *   *Нет R-кода* → Fallback (спросить источник)
+      // 2. Обработка поля "from" -> wa_id_plus и wa_id
+      if (data.From && typeof data.From === 'string') {
+        // Из "whatsapp:+79196811458" получаем "+79196811458" и "79196811458"
+        const phoneMatch = data.From.match(/whatsapp:\+(\d+)/);
+        if (phoneMatch) {
+          result.wa_id_plus = '+' + phoneMatch[1];  // "+79196811458"
+          result.wa_id = phoneMatch[1];              // "79196811458"
+        }
+      }
+
+      // 3. Обработка поля "body" - поиск R-кода
+      result.has_code = false;
+
+      if (data.Body && typeof data.Body === 'string') {
+        // Ищем код между ||- и -|| (ровно 14 символов между ними)
+        const codeRegex = /\|\|-(.+?)-\|\|/g;
+        const matches = data.Body.match(codeRegex);
+
+        if (matches && matches.length > 0) {
+          // Берем первый найденный код
+          const fullCode = matches[0]; // "||-R-WB-C-P-0000S-||"
+
+          // Проверяем что между ||- и -|| ровно 14 символов
+          const content = fullCode.slice(3, -3); // "R-WB-C-P-0000S"
+          if (content.length === 14) {
+            result.has_code = true;
+
+            // Разбираем код на части
+            const parts = content.split('-');
+            if (parts.length === 5) {
+              result.code_prefix = parts[0];      // "R"
+              result.code_source = parts[1];      // "WB" или "QR"
+              result.code_user_type = parts[2];  // "C" или "M"
+              result.code_client_type = parts[3]; // "C", "P" или "0"
+              result.code_value = parts[4];       // "0000S"
+            }
+          }
+        }
+      }
+
+      return result;
+    }
+
+    // Обработка всех входящих items
+    const items = $input.all();
+    const results = items.map(item => ({
+      json: processWAData(item.json)
+    }));
+
+    return results;
+    ```
+
+6.  **Финальная маршрутизация (Switch Node):**
+    *   `has_code = true` → Process Request (с разобранным кодом)
+    *   `has_code = false` → Fallback (спросить источник)
     *   *Медиа без текста* → Media Processing
 
 ---

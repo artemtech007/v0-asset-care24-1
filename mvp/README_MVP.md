@@ -64,6 +64,7 @@
 📄 **Документация:**
 *   [05_n8n_workflows.md](./05_n8n_workflows.md) — Общее описание всех сценариев.
 *   [webhook_deduplication_guide.md](./webhook_deduplication_guide.md) — **Важно:** Дедупликация вебхуков Twilio.
+*   [whatsapp_data_parser_node.js](./whatsapp_data_parser_node.js) — **Готовый код** для Function Node парсинга WA данных.
 *   [workflows/01_router.md](./workflows/01_router.md) — Детальная спецификация Роутера.
 *   [admin_dashboard_plan.md](./admin_dashboard_plan.md) — План реализации админ-панели.
 *   [git_github_workflow.md](./git_github_workflow.md) — Полное руководство по работе с Git и GitHub.
