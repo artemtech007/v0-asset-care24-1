@@ -73,7 +73,7 @@ export function Header() {
   const allNavItems = isLoggedIn
     ? [
         ...navItems,
-        { label: "Mein Konto", href: pathname.includes("handwerker") ? "/dashboard/handwerker" : "/dashboard/kunde" },
+        { label: "Mein Konto", href: "/dashboard/kunde" },
       ]
     : navItems
 
@@ -81,7 +81,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-24 sm:h-28 items-center justify-between">
-          <Link href="/" className="flex-shrink-0 flex flex-col" onClick={handleLogoClick}>
+          <Link href="/" className="flex-shrink-0 flex flex-col relative group" onClick={handleLogoClick}>
             <Image
               src="/images/logo.png"
               alt="AssetCare24 - Mein Zuhause"
@@ -92,6 +92,9 @@ export function Header() {
             />
             <span className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-medium">
               Ihr zuverlässiger Haushalts-Service
+            </span>
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded opacity-50 hover:opacity-100">
+                2.01
             </span>
           </Link>
 
@@ -138,25 +141,6 @@ export function Header() {
               </a>
             )}
 
-            {/* Desktop buttons - only show at 1200px+ */}
-            {showDesktopNav && (
-              <>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold px-5 py-2.5 text-sm transition-all duration-200 bg-transparent"
-                >
-                  <Link href="/registrierung">Registrieren</Link>
-                </Button>
-
-                <Button
-                  asChild
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-5 lg:px-6 py-2.5 text-sm lg:text-base transition-all duration-200 hover:scale-105"
-                >
-                  <Link href="/meldung">Service anfragen</Link>
-                </Button>
-              </>
-            )}
 
             {showHamburger && (
               <button
@@ -210,12 +194,6 @@ export function Header() {
                   className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent h-12 text-base"
                 >
                   <Link href="/registrierung">Registrieren</Link>
-                </Button>
-                <Button
-                  asChild
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium w-full h-12 text-base"
-                >
-                  <Link href="/meldung">Service anfragen</Link>
                 </Button>
               </div>
             </nav>
