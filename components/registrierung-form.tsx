@@ -25,18 +25,16 @@ import {
   Trees,
   ShieldCheck,
   Hammer,
-  Building,
-  Home,
-  UserCheck,
   ArrowRight,
   MessageCircle,
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
+import { VerificationPopup, SuccessPopup } from "@/components/verification-popup"
+import { generateMasterRegistrationLink } from "@/lib/source-codes"
 
-type UserRole = "kunde" | "handwerker"
-type HandwerkerType = "einzelhandwerker" | "unternehmen" | null
-type KundeType = "hausverwalter" | "eigentuemer" | "mieter" | null
+type HandwerkerType = "einzelhandwerker" | null
 
 const specializations = [
   { id: "elektrik", name: "Elektrik", icon: Zap },
@@ -54,29 +52,28 @@ export function RegistrierungForm() {
   const initialRole = searchParams.get("role") as UserRole | null
   const fromJobs = searchParams.get("from") === "jobs"
 
-  const [role, setRole] = useState<UserRole>(initialRole || (fromJobs ? "handwerker" : "kunde"))
   const [handwerkerType, setHandwerkerType] = useState<HandwerkerType>(null)
-  const [kundeType, setKundeType] = useState<KundeType>(null)
   const [step, setStep] = useState(1)
 
-  // Kunde form data
-  const [kundeData, setKundeData] = useState({
-    name: "",
-    whatsapp: "", // Changed telefon to whatsapp
-    email: "", // Added email
-    passwort: "",
-  })
 
   // Handwerker form data
   const [handwerkerData, setHandwerkerData] = useState({
-    name: "",
-    firmenname: "",
+    vorname: "",
+    nachname: "",
     email: "",
-    telefon: "",
+    whatsapp: "",
     passwort: "",
     specializations: [] as string[],
     workingHours: { start: "08:00", end: "18:00" },
-    workingDays: ["mo", "di", "mi", "do", "fr"] as string[],
+    workingDays: {
+      mo: true,
+      di: true,
+      mi: true,
+      do: true,
+      fr: true,
+      sa: false,
+      so: false
+    } as Record<string, boolean>,
     serviceArea: "",
     hasVehicle: true,
     experience: "",
@@ -88,29 +85,18 @@ export function RegistrierungForm() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showVerification, setShowVerification] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
 
-  const validateKundeForm = () => {
-    const newErrors: Record<string, string> = {}
-    if (!kundeData.name.trim()) newErrors.name = "Bitte geben Sie Ihren Namen ein"
-    if (!kundeData.whatsapp.trim() && !kundeData.email.trim()) {
-      newErrors.contact = "Bitte geben Sie WhatsApp oder E-Mail ein"
-    }
-    if (!kundeData.passwort) newErrors.passwort = "Bitte geben Sie ein Passwort ein"
-    else if (kundeData.passwort.length < 6) newErrors.passwort = "Das Passwort muss mindestens 6 Zeichen lang sein"
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
 
   const validateHandwerkerStep = (currentStep: number) => {
     const newErrors: Record<string, string> = {}
 
     if (currentStep === 1) {
-      if (!handwerkerData.name.trim()) newErrors.name = "Name ist erforderlich"
-      if (handwerkerType === "unternehmen" && !handwerkerData.firmenname.trim()) {
-        newErrors.firmenname = "Firmenname ist erforderlich"
-      }
+      if (!handwerkerData.vorname.trim()) newErrors.vorname = "Vorname ist erforderlich"
+      if (!handwerkerData.nachname.trim()) newErrors.nachname = "Nachname ist erforderlich"
       if (!handwerkerData.email.trim()) newErrors.email = "E-Mail ist erforderlich"
-      if (!handwerkerData.telefon.trim()) newErrors.telefon = "Telefonnummer ist erforderlich"
+      if (!handwerkerData.whatsapp.trim()) newErrors.whatsapp = "WhatsApp-Nummer ist erforderlich"
       if (!handwerkerData.passwort) newErrors.passwort = "Passwort ist erforderlich"
       else if (handwerkerData.passwort.length < 6) newErrors.passwort = "Mindestens 6 Zeichen"
       if (handwerkerData.specializations.length === 0) {
@@ -127,14 +113,6 @@ export function RegistrierungForm() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleKundeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validateKundeForm()) return
-    setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    router.push("/dashboard/kunde")
-  }
 
   const handleHandwerkerNext = () => {
     if (validateHandwerkerStep(step)) {
@@ -142,14 +120,57 @@ export function RegistrierungForm() {
     }
   }
 
+  const sendToWebhook = async (webhookUrl: string, data: any) => {
+    try {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) {
+        console.error(`Webhook failed for ${webhookUrl}:`, response.status)
+      } else {
+        console.log(`Webhook success for ${webhookUrl}`)
+      }
+    } catch (error) {
+      console.error(`Webhook error for ${webhookUrl}:`, error)
+    }
+  }
+
   const handleHandwerkerSubmit = async () => {
     if (!validateHandwerkerStep(3)) return
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Prepare data for webhook
+    const webhookData = {
+      vorname: handwerkerData.vorname,
+      nachname: handwerkerData.nachname,
+      email: handwerkerData.email,
+      whatsapp: handwerkerData.whatsapp,
+      specializations: handwerkerData.specializations,
+      workingHours: handwerkerData.workingHours,
+      workingDays: handwerkerData.workingDays,
+      serviceArea: handwerkerData.serviceArea,
+      hasVehicle: handwerkerData.hasVehicle,
+      experience: handwerkerData.experience,
+      qualifications: handwerkerData.qualifications,
+      registrationType: 'einzelhandwerker',
+      timestamp: new Date().toISOString(),
+      source: 'website_registration'
+    }
+
+    // Send to production webhook
+    await sendToWebhook('https://assetcare24.org/webhook/d509d181-13ab-4c34-b192-4b8994ec9e49', webhookData)
+
+    // Send to test webhook
+    await sendToWebhook('https://assetcare24.org/webhook-test/d509d181-13ab-4c34-b192-4b8994ec9e49', webhookData)
+
     setIsSubmitting(false)
 
-    // Open WhatsApp with verification message and UTM tracking
-    const whatsappUrl = "https://wa.me/14155238886?text=Registrierung%20abschließen&utm_source=web&utm_medium=master&utm_campaign=master_reg"
+    // Open WhatsApp with new source code tracking
+    const whatsappUrl = generateMasterRegistrationLink("14155238886")
     window.open(whatsappUrl, "_blank")
 
     // Redirect to home page after successful registration
@@ -165,390 +186,72 @@ export function RegistrierungForm() {
     }))
   }
 
+  const handleVerificationSuccess = () => {
+    setShowVerification(false)
+    setShowSuccess(true)
+  }
+
+  const handleSuccessClose = () => {
+    setShowSuccess(false)
+    // Redirect to jobs page
+    router.push("/jobs")
+  }
+
   const toggleWorkingDay = (day: string) => {
     setHandwerkerData((prev) => ({
       ...prev,
-      workingDays: prev.workingDays.includes(day)
-        ? prev.workingDays.filter((d) => d !== day)
-        : [...prev.workingDays, day],
+      workingDays: {
+        ...prev.workingDays,
+        [day]: !prev.workingDays[day]
+      },
     }))
   }
 
 
-  // Role selection component
-  const renderRoleSelection = () => (
-    <div className="mb-8">
-      <p className="text-sm font-medium text-foreground mb-3">Ich bin:</p>
-      <div className="grid grid-cols-2 gap-4">
-        <button
-          type="button"
-          onClick={() => {
-            setRole("kunde")
-            setHandwerkerType(null)
-            setKundeType(null)
-            setStep(1)
-          }}
-          className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-            role === "kunde"
-              ? "border-primary bg-primary/5 dark:bg-primary/10"
-              : "border-border hover:border-primary/50 dark:bg-[#0f1512]"
-          }`}
-        >
-          <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 transition-colors ${
-              role === "kunde" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-            }`}
-          >
-            <User className="w-6 h-6" />
-          </div>
-          <span className={`font-semibold ${role === "kunde" ? "text-primary" : "text-foreground"}`}>Kunde</span>
-          <p className="text-xs text-muted-foreground mt-1">Ich suche Hilfe</p>
-          {role === "kunde" && (
-            <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-              <CheckCircle className="w-3 h-3 text-white" />
-            </div>
-          )}
-        </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            setRole("handwerker")
-            setKundeType(null)
-          }}
-          className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
-            role === "handwerker"
-              ? "border-primary bg-primary/5 dark:bg-primary/10"
-              : "border-border hover:border-primary/50 dark:bg-[#0f1512]"
-          }`}
-        >
-          <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 transition-colors ${
-              role === "handwerker" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-            }`}
-          >
-            <Wrench className="w-6 h-6" />
-          </div>
-          <span className={`font-semibold ${role === "handwerker" ? "text-primary" : "text-foreground"}`}>
-            Handwerker
-          </span>
-          <p className="text-xs text-muted-foreground mt-1">Ich biete Hilfe an</p>
-          {role === "handwerker" && (
-            <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-              <CheckCircle className="w-3 h-3 text-white" />
-            </div>
-          )}
-        </button>
-      </div>
-    </div>
-  )
 
-  const renderKundeTypeSelection = () => (
-    <div className="bg-card dark:bg-[#1a2420] rounded-2xl shadow-lg p-8">
-      {renderRoleSelection()}
-
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Kundentyp wählen:</h3>
-
-        <button
-          type="button"
-          onClick={() => setKundeType("hausverwalter")}
-          className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-            kundeType === "hausverwalter"
-              ? "border-primary bg-primary/5 dark:bg-primary/10"
-              : "border-border hover:border-primary/50 dark:bg-[#0f1512]"
-          }`}
-        >
-          <div className="flex items-center gap-4">
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                kundeType === "hausverwalter" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-              }`}
-            >
-              <Building className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-foreground">Hausverwalter</h4>
-              <p className="text-sm text-muted-foreground mt-1">Verwalten Sie mehrere Objekte</p>
-            </div>
-            <ArrowRight
-              className={`w-5 h-5 ${kundeType === "hausverwalter" ? "text-primary" : "text-muted-foreground"}`}
-            />
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setKundeType("eigentuemer")}
-          className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-            kundeType === "eigentuemer"
-              ? "border-primary bg-primary/5 dark:bg-primary/10"
-              : "border-border hover:border-primary/50 dark:bg-[#0f1512]"
-          }`}
-        >
-          <div className="flex items-center gap-4">
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                kundeType === "eigentuemer" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-              }`}
-            >
-              <Home className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-foreground">Eigentümer</h4>
-              <p className="text-sm text-muted-foreground mt-1">Für Ihre eigene Immobilie</p>
-            </div>
-            <ArrowRight
-              className={`w-5 h-5 ${kundeType === "eigentuemer" ? "text-primary" : "text-muted-foreground"}`}
-            />
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setKundeType("mieter")}
-          className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-            kundeType === "mieter"
-              ? "border-primary bg-primary/5 dark:bg-primary/10"
-              : "border-border hover:border-primary/50 dark:bg-[#0f1512]"
-          }`}
-        >
-          <div className="flex items-center gap-4">
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                kundeType === "mieter" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-              }`}
-            >
-              <UserCheck className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-foreground">Mieter</h4>
-              <p className="text-sm text-muted-foreground mt-1">Schnelle Hilfe bei Problemen</p>
-            </div>
-            <ArrowRight className={`w-5 h-5 ${kundeType === "mieter" ? "text-primary" : "text-muted-foreground"}`} />
-          </div>
-        </button>
-      </div>
-
-      <p className="text-center text-muted-foreground mt-6">
-        Schon registriert?{" "}
-        <Link href="/anmelden" className="text-primary font-semibold hover:underline">
-          Hier anmelden
-        </Link>
-      </p>
-    </div>
-  )
-
-  // Kunde simple form (after type selection)
-  const renderKundeForm = () => (
-    <div className="bg-card dark:bg-[#1a2420] rounded-2xl shadow-lg p-8">
-      {/* Back button */}
-      <button
-        type="button"
-        onClick={() => setKundeType(null)}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
-      >
-        <ArrowRight className="w-4 h-4 rotate-180" />
-        <span>Zurück zur Auswahl</span>
-      </button>
-
-      {/* Show selected type */}
-      <div className="flex items-center gap-3 mb-6 p-4 bg-primary/5 dark:bg-primary/10 rounded-xl">
-        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
-          {kundeType === "hausverwalter" && <Building className="w-5 h-5" />}
-          {kundeType === "eigentuemer" && <Home className="w-5 h-5" />}
-          {kundeType === "mieter" && <UserCheck className="w-5 h-5" />}
-        </div>
-        <div>
-          <p className="font-semibold text-foreground">
-            {kundeType === "hausverwalter" && "Hausverwalter"}
-            {kundeType === "eigentuemer" && "Eigentümer"}
-            {kundeType === "mieter" && "Mieter"}
-          </p>
-          <p className="text-xs text-muted-foreground">Registrierung als Kunde</p>
-        </div>
-      </div>
-
-      <form onSubmit={handleKundeSubmit} className="space-y-5">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-            Name <span className="text-accent">*</span>
-          </label>
-          <div className="relative">
-            <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
-              type="text"
-              id="name"
-              value={kundeData.name}
-              onChange={(e) => {
-                setKundeData({ ...kundeData, name: e.target.value })
-                if (errors.name) setErrors({ ...errors, name: "" })
-              }}
-              className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
-                errors.name ? "border-red-500 bg-red-50 dark:bg-red-950/30" : "border-border"
-              }`}
-              placeholder="Ihr vollständiger Name"
-            />
-          </div>
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="whatsapp" className="block text-sm font-medium text-foreground mb-2">
-            WhatsApp <span className="text-muted-foreground text-xs">(oder E-Mail unten)</span>
-          </label>
-          <div className="relative">
-            <MessageCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-            <input
-              type="tel"
-              id="whatsapp"
-              value={kundeData.whatsapp}
-              onChange={(e) => {
-                setKundeData({ ...kundeData, whatsapp: e.target.value })
-                if (errors.contact) setErrors({ ...errors, contact: "" }) // Clear contact error if whatsapp is filled
-              }}
-              className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
-                errors.contact ? "border-red-500 bg-red-50 dark:bg-red-950/30" : "border-border"
-              }`}
-              placeholder="+49 123 456789"
-            />
-          </div>
-          {errors.contact && <p className="text-red-500 text-sm mt-1">{errors.contact}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-            E-Mail <span className="text-muted-foreground text-xs">(alternativ)</span>
-          </label>
-          <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
-              type="email"
-              id="email"
-              value={kundeData.email}
-              onChange={(e) => {
-                setKundeData({ ...kundeData, email: e.target.value })
-                if (errors.contact) setErrors({ ...errors, contact: "" }) // Clear contact error if email is filled
-              }}
-              className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
-                errors.contact ? "border-red-500 bg-red-50 dark:bg-red-950/30" : "border-border"
-              }`}
-              placeholder="ihre@email.de"
-            />
-          </div>
-          {/* Error message is already tied to errors.contact */}
-        </div>
-
-        <div>
-          <label htmlFor="passwort" className="block text-sm font-medium text-foreground mb-2">
-            Passwort <span className="text-accent">*</span>
-          </label>
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
-              type={showPassword ? "text" : "password"}
-              id="passwort"
-              value={kundeData.passwort}
-              onChange={(e) => {
-                setKundeData({ ...kundeData, passwort: e.target.value })
-                if (errors.passwort) setErrors({ ...errors, passwort: "" })
-              }}
-              className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
-                errors.passwort ? "border-red-500 bg-red-50 dark:bg-red-950/30" : "border-border"
-              }`}
-              placeholder="Mindestens 6 Zeichen"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-            </button>
-          </div>
-          {errors.passwort && <p className="text-red-500 text-sm mt-1">{errors.passwort}</p>}
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-accent text-white font-semibold py-4 rounded-full hover:bg-accent/90 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg mt-8"
-        >
-          {isSubmitting ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Registrierung läuft...
-            </>
-          ) : (
-            "Registrieren"
-          )}
-        </button>
-      </form>
-
-      <p className="text-center text-muted-foreground mt-6">
-        Schon registriert?{" "}
-        <Link href="/anmelden" className="text-primary font-semibold hover:underline">
-          Hier anmelden
-        </Link>
-      </p>
-    </div>
-  )
 
   // Handwerker type selection
   const renderHandwerkerTypeSelection = () => (
     <div className="bg-card dark:bg-[#1a2420] rounded-2xl shadow-lg p-8">
-      {renderRoleSelection()}
-
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-foreground mb-4">Registrierungsart wählen:</h3>
 
         <button
           type="button"
           onClick={() => setHandwerkerType("einzelhandwerker")}
-          className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-            handwerkerType === "einzelhandwerker"
-              ? "border-primary bg-primary/5 dark:bg-primary/10"
-              : "border-border hover:border-primary/50 dark:bg-[#0f1512]"
-          }`}
+          className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left border-primary bg-primary/5 dark:bg-primary/10`}
         >
           <div className="flex items-start gap-4">
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                handwerkerType === "einzelhandwerker" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-              }`}
-            >
+            <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center">
               <User className="w-6 h-6" />
             </div>
             <div className="flex-1">
               <h4 className="font-semibold text-foreground">Einzelhandwerker</h4>
               <p className="text-sm text-muted-foreground mt-1">Selbstständiger Handwerker ohne Firma</p>
             </div>
-            {handwerkerType === "einzelhandwerker" && <CheckCircle className="w-6 h-6 text-primary" />}
+            <CheckCircle className="w-6 h-6 text-primary" />
           </div>
         </button>
 
         <button
           type="button"
-          onClick={() => setHandwerkerType("unternehmen")}
-          className={`w-full p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-            handwerkerType === "unternehmen"
-              ? "border-primary bg-primary/5 dark:bg-primary/10"
-              : "border-border hover:border-primary/50 dark:bg-[#0f1512]"
-          }`}
+          disabled
+          className="w-full p-6 rounded-xl border-2 border-border bg-muted/50 dark:bg-[#0f1512]/50 cursor-not-allowed text-left opacity-60"
         >
           <div className="flex items-start gap-4">
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                handwerkerType === "unternehmen" ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-              }`}
-            >
+            <div className="w-12 h-12 rounded-full bg-muted text-muted-foreground flex items-center justify-center">
               <Building2 className="w-6 h-6" />
             </div>
             <div className="flex-1">
-              <h4 className="font-semibold text-foreground">Handwerksunternehmen</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-muted-foreground">Handwerksunternehmen</h4>
+                <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+                  Demnächst
+                </Badge>
+              </div>
               <p className="text-sm text-muted-foreground mt-1">Registriertes Unternehmen mit Mitarbeitern</p>
             </div>
-            {handwerkerType === "unternehmen" && <CheckCircle className="w-6 h-6 text-primary" />}
           </div>
         </button>
       </div>
@@ -586,49 +289,47 @@ export function RegistrierungForm() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            {handwerkerType === "unternehmen" ? "Ansprechpartner" : "Name"} <span className="text-accent">*</span>
+            Vorname <span className="text-accent">*</span>
           </label>
           <div className="relative">
             <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
-              value={handwerkerData.name}
+              value={handwerkerData.vorname}
               onChange={(e) => {
-                setHandwerkerData({ ...handwerkerData, name: e.target.value })
-                if (errors.name) setErrors({ ...errors, name: "" })
+                setHandwerkerData({ ...handwerkerData, vorname: e.target.value })
+                if (errors.vorname) setErrors({ ...errors, vorname: "" })
               }}
               className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
-                errors.name ? "border-red-500" : "border-border"
+                errors.vorname ? "border-red-500" : "border-border"
               }`}
-              placeholder="Vollständiger Name"
+              placeholder="Vorname"
             />
           </div>
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+          {errors.vorname && <p className="text-red-500 text-sm mt-1">{errors.vorname}</p>}
         </div>
 
-        {handwerkerType === "unternehmen" && (
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Firmenname <span className="text-accent">*</span>
-            </label>
-            <div className="relative">
-              <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <input
-                type="text"
-                value={handwerkerData.firmenname}
-                onChange={(e) => {
-                  setHandwerkerData({ ...handwerkerData, firmenname: e.target.value })
-                  if (errors.firmenname) setErrors({ ...errors, firmenname: "" })
-                }}
-                className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
-                  errors.firmenname ? "border-red-500" : "border-border"
-                }`}
-                placeholder="Name Ihres Unternehmens"
-              />
-            </div>
-            {errors.firmenname && <p className="text-red-500 text-sm mt-1">{errors.firmenname}</p>}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Nachname <span className="text-accent">*</span>
+          </label>
+          <div className="relative">
+            <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              type="text"
+              value={handwerkerData.nachname}
+              onChange={(e) => {
+                setHandwerkerData({ ...handwerkerData, nachname: e.target.value })
+                if (errors.nachname) setErrors({ ...errors, nachname: "" })
+              }}
+              className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
+                errors.nachname ? "border-red-500" : "border-border"
+              }`}
+              placeholder="Nachname"
+            />
           </div>
-        )}
+          {errors.nachname && <p className="text-red-500 text-sm mt-1">{errors.nachname}</p>}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -656,24 +357,24 @@ export function RegistrierungForm() {
 
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Telefon <span className="text-accent">*</span>
+            WhatsApp <span className="text-accent">*</span>
           </label>
           <div className="relative">
             <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="tel"
-              value={handwerkerData.telefon}
+              value={handwerkerData.whatsapp}
               onChange={(e) => {
-                setHandwerkerData({ ...handwerkerData, telefon: e.target.value })
-                if (errors.telefon) setErrors({ ...errors, telefon: "" })
+                setHandwerkerData({ ...handwerkerData, whatsapp: e.target.value })
+                if (errors.whatsapp) setErrors({ ...errors, whatsapp: "" })
               }}
               className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-colors focus:outline-none focus:border-primary bg-background dark:bg-[#0f1512] text-foreground ${
-                errors.telefon ? "border-red-500" : "border-border"
+                errors.whatsapp ? "border-red-500" : "border-border"
               }`}
               placeholder="+49 123 456789"
             />
           </div>
-          {errors.telefon && <p className="text-red-500 text-sm mt-1">{errors.telefon}</p>}
+          {errors.whatsapp && <p className="text-red-500 text-sm mt-1">{errors.whatsapp}</p>}
         </div>
       </div>
 
@@ -778,7 +479,7 @@ export function RegistrierungForm() {
               type="button"
               onClick={() => toggleWorkingDay(day)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                handwerkerData.workingDays.includes(day)
+                handwerkerData.workingDays[day]
                   ? "bg-primary text-white"
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
@@ -879,7 +580,6 @@ export function RegistrierungForm() {
           />
         </div>
       </div>
-
 
       <div className="space-y-3 pt-4 border-t border-border">
         <label className="flex items-start gap-3 cursor-pointer">
@@ -1002,12 +702,22 @@ export function RegistrierungForm() {
     </div>
   )
 
+  // Main render logic
   return (
-    <div className="w-full">
-      {role === "kunde" && !kundeType && renderKundeTypeSelection()}
-      {role === "kunde" && kundeType && renderKundeForm()}
-      {role === "handwerker" && !handwerkerType && renderHandwerkerTypeSelection()}
-      {role === "handwerker" && handwerkerType && renderHandwerkerForm()}
-    </div>
+    <>
+      {handwerkerType ? renderHandwerkerForm() : renderHandwerkerTypeSelection()}
+
+      {/* Popup components outside the main content */}
+      <VerificationPopup
+        isOpen={showVerification}
+        onClose={() => setShowVerification(false)}
+        onVerify={handleVerificationSuccess}
+      />
+
+      <SuccessPopup
+        isOpen={showSuccess}
+        onClose={handleSuccessClose}
+      />
+    </>
   )
 }
