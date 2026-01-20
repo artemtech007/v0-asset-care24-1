@@ -1,8 +1,35 @@
 # Git & GitHub Workflow Guide - AssetCare24
 
-**Версия:** 1.0
-**Дата:** 10 января 2026 г.
+**Версия:** 1.1
+**Дата:** 20 января 2026 г.
 **Автор:** AI Assistant
+
+## ⚠️ ВАЖНО: Проблема с деплоем на Vercel (январь 2026)
+
+**Проблема:** Vercel не реагировал на изменения в ветке `master` основного репозитория `v0-asset-care24-1`.
+
+**Причина:** Vercel был настроен на автоматический деплой из ветки `main` подмодуля `site/`, а не из ветки `master` основного репозитория.
+
+**Решение:**
+1. Пушить frontend изменения в ветку `main` подмодуля `site/`:
+   ```bash
+   cd site/
+   git checkout main
+   git add .
+   git commit -m "feat: Your changes"
+   git push origin main
+   ```
+2. Обновлять ссылку на подмодуль в основном репозитории:
+   ```bash
+   cd ..  # вернуться в основной репозиторий
+   git add site
+   git commit -m "chore: Update site submodule"
+   git push origin master
+   ```
+
+**Результат:** Деплой на Vercel происходит автоматически при пуше в `site/main`.
+
+---
 
 ## 🎯 Обзор
 
@@ -174,9 +201,21 @@ git commit -m "feat: Add new registration form
 
 ### Вечер: Публикация изменений
 ```bash
-# Отправить ветку на GitHub
-git push origin feature/new-feature-name
+# Для frontend изменений (site/) - деплоит на Vercel
+cd site/
+git checkout main
+git add .
+git commit -m "feat: Your frontend changes"
+git push origin main
+cd ..  # вернуться в основной репозиторий
 
+# Обновить ссылку на подмодуль
+git add site
+git commit -m "chore: Update site submodule"
+git push origin master
+
+# Для backend/API изменений - создать PR
+git push origin feature/new-feature-name
 # Создать Pull Request через GitHub интерфейс
 # После ревью и аппрува - merge в master
 ```
@@ -315,9 +354,11 @@ git submodule update --init --recursive
 ## 🚀 Деплой на Vercel
 
 ### Автоматический деплой
-- **Триггер:** Push в ветку `main` в репозитории `site/`
+- **Триггер:** Push в ветку `main` подмодуля `site/`
+- **Репозиторий:** `https://github.com/artemtech007/v0-asset-care24-1.git` (ветка `site/main`)
 - **URL:** `https://v0-assetcare24.vercel.app`
 - **Время:** 2-5 минут после push
+- **Важно:** Деплой происходит из подмодуля `site/`, а не из основного репозитория!
 
 ### Ручной redeploy
 ```bash
@@ -485,8 +526,19 @@ git status
 git pull origin master
 git checkout -b feature/my-feature
 # ... работа ...
+
+# Для frontend изменений:
+cd site/
+git checkout main
 git add .
-git commit -m "feat: My feature description"
+git commit -m "feat: Frontend changes"
+git push origin main
+cd ..
+git add site
+git commit -m "chore: Update site submodule"
+git push origin master
+
+# Для backend изменений:
 git push origin feature/my-feature
 # Создать PR в GitHub
 
