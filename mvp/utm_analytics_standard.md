@@ -26,6 +26,7 @@
 
 **Примеры:**
 - `||-R-QR-C-C-00001-||` — Контрактный клиент через QR-код
+- `||-R-QR-M-C-00001-||` — **Работник, обслуживающий контракт 00001**
 - `||-R-WB-M-0-00000-||` — Мастер через веб-сайт
 
 **Где:**
@@ -178,6 +179,9 @@ Hallo, ich möchte mich als Handwerker registrieren
 
 Ich interessiere mich für Handwerksarbeiten
 Код источника: ||-R-QR-M-0-00234-||
+
+Ich bin Techniker für Vertrag 00001
+Код источника: ||-R-QR-M-C-00001-||
 ```
 
 ---

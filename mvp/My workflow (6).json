@@ -1,0 +1,92 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        -480
+      ],
+      "id": "243f2f16-da33-48a1-952b-d7d6a81241c1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "n8n_chat_histories",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -304
+      ],
+      "id": "1541e90b-01f6-4d53-a384-5dbee72dcf76",
+      "name": "Get many rows",
+      "credentials": {
+        "supabaseApi": {
+          "id": "JICOBDpAEdSUP4up",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "bucketName": "bucket1",
+        "returnAll": true,
+        "options": {
+          "fetchOwner": true,
+          "folderKey": "masters"
+        }
+      },
+      "type": "n8n-nodes-base.s3",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -480
+      ],
+      "id": "db9675e5-61fa-4863-94d3-247c2864ca0f",
+      "name": "Get many files",
+      "credentials": {
+        "s3": {
+          "id": "MMuaGEJxsionKV0B",
+          "name": "S3 account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9dc0bc28-a307-4930-b01b-2a025e22f9d0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6e75fbfbd1b80d588e3fea682b7f76b7a34d3d3fd6575d31cf7e090a1a489005"
+  },
+  "id": "AtpIEGEa88Eindk7",
+  "tags": []
+}

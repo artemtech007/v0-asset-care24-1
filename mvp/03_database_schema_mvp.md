@@ -1,6 +1,6 @@
-# Схема Базы Данных MVP (Supabase / PostgreSQL) v2.1
+# Схема Базы Данных MVP (Supabase / PostgreSQL) v2.5
 
-**Цель:** Архитектура с разделенными таблицами для клиентов и мастеров, поддержка множественных ролей и каналов коммуникации.
+**Цель:** Архитектура с разделенными таблицами для клиентов и мастеров, поддержка множественных ролей и каналов коммуникации. Добавлена верификация контактов, поля для UTM-подобных кодов регистрации и привязка к Telegram-топикам.
 
 ## 1. Основные Таблицы (Tables)
 
@@ -14,12 +14,17 @@
 | `email` | text | | Email адрес |
 | `whatsapp_id` | text | | Технический ID в WhatsApp/Twilio |
 | `telegram_id` | text | | ID пользователя в Telegram |
-| `first_name` | text | NOT NULL | Имя клиента |
-| `last_name` | text | NOT NULL | Фамилия клиента |
+| `first_name` | text | | Имя клиента (опционально) |
+| `last_name` | text | | Фамилия клиента (опционально) |
 | `status` | text | default 'active' | Статус: `active`, `inactive`, `blocked` |
 | `category` | text | | Категория: `existing_client`, `new_client`, `unknown` |
 | `subcategory` | text | | Подкатегория: `house_1`, `complex_a`, `ad_google` и т.д. |
 | `source` | text | | Источник привлечения: `qr_code`, `advertisement`, `website`, `referral` |
+| `wa_verified` | boolean | default false | Верификация WhatsApp номера |
+| `email_verified` | boolean | default false | Верификация email адреса |
+| `phone_verified` | boolean | default false | Верификация номера телефона |
+| `cod_value` | varchar(20) | | COD (Cash on Delivery) идентификатор (макс 20 символов) |
+| `thread_id` | text | | ID топика в Telegram супергруппе |
 | `first_contact_at` | timestamptz | default `now()` | Дата первого контакта |
 | `last_activity_at` | timestamptz | default `now()` | Последняя активность |
 | `meta_data` | jsonb | default '{}' | Дополнительные данные (адреса, предпочтения) |
@@ -38,7 +43,15 @@
 | `telegram_id` | text | | ID пользователя в Telegram |
 | `first_name` | text | NOT NULL | Имя мастера |
 | `last_name` | text | NOT NULL | Фамилия мастера |
-| `status` | text | default 'pending_approval' | Статус: `pending_approval`, `approved`, `active`, `suspended`, `blocked` |
+| `status` | text | default 'pending_approval' | Статус: `pending_approval`, `veriffied`, `approved`, `active`, `suspended`, `blocked` |
+| `wa_norm` | varchar(32) | | Нормализованный номер WhatsApp (макс 32 символа) |
+| `wa_verified` | boolean | default false | Верификация WhatsApp номера |
+| `email_verified` | boolean | default false | Верификация email адреса |
+| `phone_verified` | boolean | default false | Верификация номера телефона |
+| `code_source` | text | | Источник регистрации (из кода, аналог UTM) |
+| `code_master_type` | text | | Тип мастера из регистрационного кода |
+| `code_value` | text | | Значение регистрационного кода |
+| `thread_id` | text | | ID топика в Telegram супергруппе |
 | `last_activity_at` | timestamptz | default `now()` | Последняя активность |
 | `meta_data` | jsonb | default '{}' | Дополнительные данные |
 | `created_at` | timestamptz | default `now()` | Дата создания профиля |
@@ -147,7 +160,7 @@
 | `id` | uuid | PK, default `gen_random_uuid()` | ID статуса |
 | `client_id` | text | FK -> `clients.id` | Клиент |
 | `session_id` | uuid | default `gen_random_uuid()` | ID сессии диалога |
-| `current_state` | text | NOT NULL | Текущее состояние бота: `start`, `waiting_address`, `waiting_category`, `request_created`, `feedback_pending` |
+| `current_state` | text | NOT NULL | Текущее состояние бота: `registered`,`start`, `waiting_address`, `waiting_category`, `request_created`, `feedback_pending` |
 | `state_data` | jsonb | default '{}' | Данные состояния (временные данные диалога) |
 | `last_message_at` | timestamptz | default `now()` | Последнее сообщение |
 | `is_active` | boolean | default true | Активная ли сессия |
@@ -487,6 +500,69 @@ PostGIS уже установлен и активирован в Supabase.
 **Внимание:** Этот скрипт пересоздает всю базу данных. Выполнять только на пустой БД!
 
 **Отладочная версия:** CHECK constraints временно убраны для упрощения тестирования и отладки. Рекомендуемые значения полей описаны в документации к таблицам.
+
+### 3.2 Поля верификации контактов и COD (v2.3)
+Система верификации позволяет отслеживать подтвержденные контакты пользователей и платежную информацию:
+
+**Поля верификации:**
+- **`wa_verified`**: Подтверждение WhatsApp номера через двустороннее взаимодействие
+- **`email_verified`**: Подтверждение email через ссылку активации или код
+- **`phone_verified`**: Подтверждение номера телефона через SMS-код
+- **`wa_norm`**: Нормализованный формат WhatsApp номера для поиска и дедупликации (только в masters)
+
+**Поле оплаты:**
+- **`cod_value`**: COD (Cash on Delivery) идентификатор для оплаты при получении (макс 20 символов)
+
+**Поля регистрационных кодов (v2.4):**
+- **`code_source`**: Источник регистрации мастера (партнер, сайт, реферал и т.д.)
+- **`code_master_type`**: Тип/категория мастера из регистрационного кода
+- **`code_value`**: Само значение кода, использованное при регистрации (аналог UTM-метки)
+
+**Поля Telegram-топиков (v2.5):**
+- **`thread_id`**: ID топика в супергруппе Telegram для персональной коммуникации с пользователем
+
+**Применение в логике:**
+- Заказы принимаются только от верифицированных контактов
+- Push-уведомления отправляются только на верифицированные каналы
+- Поиск дубликатов основан на нормализованных номерах
+- COD значения используются для обработки платежей при доставке
+- Регистрационные коды используются для аналитики привлечения мастеров и категоризации
+- Thread ID используются для персональной коммуникации в Telegram-супергруппах
+
+**Опциональные поля имени (v2.3.1):**
+Поля `first_name` и `last_name` в таблице `clients` стали опциональными, чтобы позволить создавать записи клиентов на ранних этапах взаимодействия, когда имя заказчика еще неизвестно. Это позволяет:
+- Создавать профили клиентов сразу при первом контакте через WhatsApp
+- Связывать заявки с клиентами до сбора полной информации
+- Заполнять имя и фамилию постепенно в процессе диалога
+
+### 3.3 Миграция на v2.3
+**Скрипты миграции:**
+- [add_verification_columns_migration.sql](./add_verification_columns_migration.sql) — добавление полей верификации
+- [remove_clients_not_null_constraints.sql](./remove_clients_not_null_constraints.sql) — снятие обязательности полей имени
+- [add_master_code_fields_migration.sql](./add_master_code_fields_migration.sql) — добавление полей регистрационных кодов
+- [add_thread_id_migration.sql](./add_thread_id_migration.sql) — добавление полей Telegram-топиков
+
+```sql
+-- Безопасная миграция с добавлением полей верификации
+ALTER TABLE masters ADD COLUMN wa_norm varchar(32);
+ALTER TABLE masters ADD COLUMN wa_verified boolean DEFAULT false;
+ALTER TABLE masters ADD COLUMN email_verified boolean DEFAULT false;
+ALTER TABLE masters ADD COLUMN phone_verified boolean DEFAULT false;
+
+ALTER TABLE clients ADD COLUMN wa_verified boolean DEFAULT false;
+ALTER TABLE clients ADD COLUMN email_verified boolean DEFAULT false;
+ALTER TABLE clients ADD COLUMN phone_verified boolean DEFAULT false;
+ALTER TABLE clients ADD COLUMN cod_value varchar(20);
+
+-- v2.4: Add master code fields
+ALTER TABLE masters ADD COLUMN code_source text;
+ALTER TABLE masters ADD COLUMN code_master_type text;
+ALTER TABLE masters ADD COLUMN code_value text;
+
+-- v2.5: Add thread_id fields for Telegram topics
+ALTER TABLE clients ADD COLUMN thread_id text;
+ALTER TABLE masters ADD COLUMN thread_id text;
+```
 
 ```sql
 -- =====================================================
