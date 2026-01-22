@@ -161,20 +161,16 @@ export function RegistrierungForm() {
       source: 'website_registration'
     }
 
-    // Send to production webhook
-    await sendToWebhook('https://assetcare24.org/webhook/d509d181-13ab-4c34-b192-4b8994ec9e49', webhookData)
-
-    // Send to test webhook
-    await sendToWebhook('https://assetcare24.org/webhook-test/d509d181-13ab-4c34-b192-4b8994ec9e49', webhookData)
-
-    setIsSubmitting(false)
-
-    // Open WhatsApp with new source code tracking
+    // Open WhatsApp immediately (synchronous)
     const whatsappUrl = generateMasterRegistrationLink("14155238886")
     window.open(whatsappUrl, "_blank")
 
-    // Redirect to home page after successful registration
+    setIsSubmitting(false)
     router.push("/")
+
+    // Send webhooks asynchronously after UI updates
+    sendToWebhook('https://assetcare24.org/webhook/d509d181-13ab-4c34-b192-4b8994ec9e49', webhookData)
+    sendToWebhook('https://assetcare24.org/webhook-test/d509d181-13ab-4c34-b192-4b8994ec9e49', webhookData)
   }
 
   const toggleSpecialization = (id: string) => {
@@ -236,22 +232,18 @@ export function RegistrierungForm() {
 
         <button
           type="button"
-          disabled
-          className="w-full p-6 rounded-xl border-2 border-border bg-muted/50 dark:bg-[#0f1512]/50 cursor-not-allowed text-left opacity-60"
+          onClick={() => router.push("/firma-registrieren")}
+          className="w-full p-6 rounded-xl border-2 border-border hover:border-primary transition-all duration-300 text-left cursor-pointer"
         >
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-muted text-muted-foreground flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
               <Building2 className="w-6 h-6" />
             </div>
             <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-muted-foreground">Handwerksunternehmen</h4>
-                <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
-                  Demnächst
-                </Badge>
-              </div>
+              <h4 className="font-semibold text-foreground">Handwerksunternehmen</h4>
               <p className="text-sm text-muted-foreground mt-1">Registriertes Unternehmen mit Mitarbeitern</p>
             </div>
+            <CheckCircle className="w-6 h-6 text-primary" />
           </div>
         </button>
       </div>

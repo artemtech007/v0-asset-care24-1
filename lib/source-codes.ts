@@ -47,6 +47,14 @@ export const SITE_BUTTON_CODES = {
     userType: 'M' as const,
     clientType: '0' as const,
     code: '00000' // По умолчанию для новых мастеров
+  },
+
+  // Регистрация фирмы - кнопка "Registrierung abschließen"
+  companyRegistrationButton: {
+    source: 'WB' as const,
+    userType: 'F' as const, // F = Firma (фирма)
+    clientType: '0' as const, // 0 = нет специального типа клиента
+    code: '00000' // По умолчанию для новых фирм
   }
 };
 
@@ -90,6 +98,9 @@ export const generateServicesLink = (phone: string) =>
 
 export const generateMasterRegistrationLink = (phone: string) =>
   generateWhatsAppLink(phone, SITE_BUTTON_CODES.masterRegistrationButton);
+
+export const generateCompanyRegistrationLink = (phone: string) =>
+  generateWhatsAppLink(phone, SITE_BUTTON_CODES.companyRegistrationButton);
 
 export const generatePublicQRLink = (phone: string) =>
   generateWhatsAppLink(phone, QR_CODES.publicClient);
