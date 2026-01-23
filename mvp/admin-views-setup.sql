@@ -76,7 +76,7 @@ SELECT
     r.address_snapshot as address,
 
     -- Информация о клиенте
-    CONCAT(c.first_name, ' ', c.last_name) as client_name,
+    COALESCE(NULLIF(TRIM(CONCAT(COALESCE(c.first_name, ''), ' ', COALESCE(c.last_name, ''))), ''), 'Unbekannt') as client_name,
     c.phone as client_phone,
     c.category as client_category,
     c.subcategory as client_subcategory,
@@ -86,7 +86,7 @@ SELECT
     ca.postal_code as address_postal_code,
 
     -- Информация о назначенном мастере
-    CONCAT(m.first_name, ' ', m.last_name) as master_name,
+    COALESCE(NULLIF(TRIM(CONCAT(COALESCE(m.first_name, ''), ' ', COALESCE(m.last_name, ''))), ''), NULL) as master_name,
     m.phone as master_phone,
     m.rating as master_rating,
     r.assigned_at,
