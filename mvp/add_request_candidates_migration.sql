@@ -153,8 +153,8 @@ SELECT
   r.description,
   r.postal_code,
   r.address_snapshot as address,
-  r.published_at,
-  r.telegram_message_id,
+  r.published_at as request_published_at,
+  r.telegram_message_id as request_telegram_message_id,
 
   -- Информация о клиенте
   CONCAT(c.first_name, ' ', c.last_name) as client_name,
