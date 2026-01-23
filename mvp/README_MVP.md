@@ -48,6 +48,20 @@ npm run dev -- --port 3000
 # Сайт будет доступен на http://localhost:3000
 ```
 
+### Настройка переменных окружения
+```bash
+# Создать файл с API ключами Supabase
+touch site/.env.local
+
+# Содержимое .env.local (получить ключи из Coolify или Supabase Dashboard)
+NEXT_PUBLIC_SUPABASE_URL=https://supabase.assetcare24.org
+NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш-anon-key
+SUPABASE_SERVICE_ROLE_KEY=ваш-service-role-key
+
+# ⚠️ ВАЖНО: Никогда не коммитить .env.local в git!
+# Этот файл содержит секретные ключи API
+```
+
 ### Структура проекта после миграции
 ```
 assetcare24/               # Основной репозиторий
