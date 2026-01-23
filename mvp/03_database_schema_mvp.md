@@ -102,8 +102,8 @@
 | `is_default` | boolean | default false | Адрес по умолчанию |
 | `created_at` | timestamptz | default `now()` | Дата создания |
 
-### 1.6 `requests` (Заявки)
-Ядро системы - связь клиентов и мастеров. Поддержка разделения на дочерние заявки.
+### 1.6 `requests` (Заявки) - ОБНОВЛЕНО v2.9
+Ядро системы - связь клиентов и мастеров. Расширенный жизненный цикл с кандидатами.
 
 | Column | Type | Constraints | Описание |
 | :--- | :--- | :--- | :--- |
@@ -114,7 +114,7 @@
 | `address_snapshot` | text | | Копия адреса для истории (опционально) |
 | `postal_code` | text | | ZIP-код места выполнения |
 | `master_id` | text | FK -> `masters.id` (nullable) | Кто выполняет (Мастер) |
-| `status` | text | default 'new' | Статус: `new`, `assigned`, `in_progress`, `completed`, `canceled`, `paused` |
+| `status` | text | default 'waiting_candidates' | Расширенные статусы жизненного цикла |
 | `category` | text | | Категория проблемы (Сантехника, Электрика) |
 | `description` | text | | Текст описания проблемы |
 | `urgency` | text | default 'normal' | Срочность: `low`, `normal`, `high`, `urgent` |
@@ -124,17 +124,77 @@
 | `scheduled_date` | date | | Запланированная дата выполнения |
 | `created_at` | timestamptz | default `now()` | Время создания заявки |
 | `completed_at` | timestamptz | | Время завершения |
+| `published_at` | timestamptz | | Время публикации в Telegram канале |
+| `telegram_message_id` | text | | ID сообщения в Telegram для обновлений |
 
-**Статусы для многозаявочности:**
-- `new` - новая заявка (ждет назначения мастера)
-- `assigned` - назначена мастеру (принята, ждет выполнения) **[МНОГОЗАЯВОЧНОСТЬ]**
-- `in_progress` - в работе (активно выполняется) **[ТОЛЬКО ОДНА]**
-- `paused` - приостановлена (ждет материалов/инструментов)
-- `completed` - завершена
-- `canceled` - отменена
+**Расширенные статусы жизненного цикла:**
+- `waiting_candidates` - заявка создана, опубликована в Telegram, ждем откликов мастеров
+- `candidates_collecting` - собираем кандидатов (мастера откликаются)
+- `master_selection` - администратор выбирает мастера из кандидатов
+- `master_assigned` - мастер назначен, но еще не приступил
+- `scheduled` - запланирована дата выполнения
+- `in_progress` - мастер приступил к работе
+- `paused` - работа приостановлена (ждет материалов/инструментов)
+- `completed` - работа завершена
+- `feedback_pending` - ждем оценки от клиента
+- `feedback_received` - оценка получена
+- `canceled` - заявка отменена
 
-**Планирование работ:**
-- `scheduled_date` - запланированная дата выполнения работы
+**Telegram интеграция:**
+- `published_at` - время публикации заявки в канале
+- `telegram_message_id` - для обновления статуса в Telegram
+
+### 1.6.1 `request_candidates` (Кандидаты на заявку) - НОВАЯ v2.9
+Таблица для аккумуляции мастеров-кандидатов на выполнение заявки.
+
+| Column | Type | Constraints | Описание |
+| :--- | :--- | :--- | :--- |
+| `id` | uuid | PK, default `gen_random_uuid()` | Уникальный ID кандидатуры |
+| `request_id` | bigint | FK -> `requests.id`, NOT NULL | Заявка |
+| `master_id` | text | FK -> `masters.id`, NOT NULL | Кандидат-мастер |
+| `applied_at` | timestamptz | default `now()` | Время отклика |
+| `status` | text | default 'pending' | Статус кандидатуры: `pending`, `selected`, `rejected`, `withdrawn` |
+| `master_comment` | text | | Комментарий мастера при отклике |
+| `admin_comment` | text | | Комментарий администратора при выборе |
+| `selected_at` | timestamptz | | Время выбора этого кандидата |
+| `created_at` | timestamptz | default `now()` | Время создания записи |
+
+**Бизнес-логика:**
+- Один мастер может откликнуться на заявку только один раз
+- Администратор выбирает одного кандидата из списка
+- Остальные кандидатуры помечаются как `rejected`
+- Выбранная кандидатура становится `selected`
+
+**Индексы для производительности:**
+```sql
+CREATE UNIQUE INDEX idx_request_candidates_unique ON request_candidates(request_id, master_id);
+CREATE INDEX idx_request_candidates_request ON request_candidates(request_id);
+CREATE INDEX idx_request_candidates_master ON request_candidates(master_id);
+CREATE INDEX idx_request_candidates_status ON request_candidates(status);
+```
+
+**Пример использования:**
+```sql
+-- Мастер откликается на заявку
+INSERT INTO request_candidates (request_id, master_id, master_comment)
+VALUES (101, 'mid_wa_49987654321', 'Готов выполнить работу в ближайшие дни');
+
+-- Администратор выбирает мастера
+UPDATE request_candidates
+SET status = 'selected', selected_at = now(), admin_comment = 'Выбран за опыт'
+WHERE request_id = 101 AND master_id = 'mid_wa_49987654321';
+
+UPDATE request_candidates
+SET status = 'rejected'
+WHERE request_id = 101 AND master_id != 'mid_wa_49987654321';
+
+-- Обновляем основную заявку
+UPDATE requests
+SET master_id = 'mid_wa_49987654321',
+    status = 'master_assigned',
+    assigned_at = now()
+WHERE id = 101;
+```
 
 ### 1.7 `request_media` (Медиа файлы)
 Связка файлов (в MinIO) с заявками.
