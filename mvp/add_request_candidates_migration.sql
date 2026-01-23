@@ -122,21 +122,39 @@ WHERE r.master_id IS NOT NULL
 ALTER TABLE public.request_candidates ENABLE ROW LEVEL SECURITY;
 
 -- Политики RLS (адаптировать под нужды безопасности)
-CREATE POLICY "Admins can manage request candidates"
-ON public.request_candidates
-FOR ALL USING (
-    EXISTS (
-        SELECT 1 FROM public.admin_users
-        WHERE id = current_setting('request.jwt.claims', true)::json->>'sub'
-        AND role IN ('admin', 'manager')
-    )
-);
+DO $$
+BEGIN
+    -- Создаем политику для админов, если она не существует
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'request_candidates'
+        AND policyname = 'Admins can manage request candidates'
+    ) THEN
+        CREATE POLICY "Admins can manage request candidates"
+        ON public.request_candidates
+        FOR ALL USING (
+            EXISTS (
+                SELECT 1 FROM public.admin_users
+                WHERE id = current_setting('request.jwt.claims', true)::json->>'sub'
+                AND role IN ('admin', 'manager')
+            )
+        );
+    END IF;
 
-CREATE POLICY "Masters can view their own candidates"
-ON public.request_candidates
-FOR SELECT USING (
-    master_id = current_setting('request.jwt.claims', true)::json->>'sub'
-);
+    -- Создаем политику для мастеров, если она не существует
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'request_candidates'
+        AND policyname = 'Masters can view their own candidates'
+    ) THEN
+        CREATE POLICY "Masters can view their own candidates"
+        ON public.request_candidates
+        FOR SELECT USING (
+            master_id = current_setting('request.jwt.claims', true)::json->>'sub'
+        );
+    END IF;
+END
+$$;
 
 -- =============================================================================
 -- 7. Обновление views для админки
