@@ -44,6 +44,7 @@
 | `first_name` | text | NOT NULL | Имя мастера |
 | `last_name` | text | NOT NULL | Фамилия мастера |
 | `status` | text | default 'pending_approval' | Статус: `pending_approval`, `veriffied`, `approved`, `active`, `suspended`, `blocked` |
+| `rating` | numeric(2,1) | default 0.0 | Рейтинг мастера (0.0 - 5.0) |
 | `wa_norm` | varchar(32) | | Нормализованный номер WhatsApp (макс 32 символа) |
 | `wa_verified` | boolean | default false | Верификация WhatsApp номера |
 | `email_verified` | boolean | default false | Верификация email адреса |

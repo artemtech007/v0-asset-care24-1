@@ -38,10 +38,14 @@ CREATE INDEX IF NOT EXISTS idx_request_candidates_status
 ON public.request_candidates(status);
 
 -- =============================================================================
--- 3. Обновление таблицы requests - новые поля
+-- 3. Обновление таблиц - новые поля
 -- =============================================================================
 
--- Добавляем новые поля для Telegram интеграции
+-- Добавляем поле rating в таблицу masters (если отсутствует)
+ALTER TABLE public.masters
+ADD COLUMN IF NOT EXISTS rating numeric(2,1) DEFAULT 0.0;
+
+-- Добавляем новые поля для Telegram интеграции в requests
 ALTER TABLE public.requests
 ADD COLUMN IF NOT EXISTS published_at timestamptz;
 
