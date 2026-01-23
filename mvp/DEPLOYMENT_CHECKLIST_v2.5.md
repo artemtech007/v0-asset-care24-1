@@ -53,7 +53,7 @@
 
 #### **Шаг 1.1: Создание таблицы кандидатов**
 ```sql
--- Выполнить: mvp/add_request_candidates_migration.sql
+-- Выполнить: mvp/add_request_candidates_migration.sql (ОБНОВЛЕННАЯ ВЕРСИЯ)
 ```
 - [ ] Скрипт выполнен без ошибок
 - [ ] Проверить создание таблицы:
@@ -100,6 +100,32 @@ DROP FUNCTION IF EXISTS assign_master_to_request(bigint, text, text);
 -- Восстановить статусы
 UPDATE requests SET status = 'new' WHERE status IN ('waiting_candidates', 'candidates_collecting', 'master_selection');
 UPDATE requests SET status = 'assigned' WHERE status = 'master_assigned';
+
+-- Восстановить старый constraint
+ALTER TABLE requests DROP CONSTRAINT IF EXISTS requests_status_check;
+ALTER TABLE requests ADD CONSTRAINT requests_status_check
+CHECK (status IN ('new', 'assigned', 'in_progress', 'completed', 'canceled', 'paused'));
+```
+
+### **Возможные проблемы и решения:**
+
+#### **Ошибка: "violates check constraint requests_status_check"**
+```
+Причина: Constraint не позволяет новые статусы ('waiting_candidates', etc.)
+Решение: Убедиться, что используется обновленная версия миграционного скрипта
+         (commit: 6544826) с командами DROP/CREATE CONSTRAINT
+```
+
+#### **Ошибка: "column published_at does not exist"**
+```
+Причина: Скрипт миграции не выполнен полностью
+Решение: Перезапустить миграцию с начала
+```
+
+#### **Ошибка: "function assign_master_to_request already exists"**
+```
+Причина: Функция уже создана в предыдущем запуске
+Решение: DROP FUNCTION перед повторным запуском или использовать CREATE OR REPLACE
 ```
 
 ---
