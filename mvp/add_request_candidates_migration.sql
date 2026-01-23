@@ -142,8 +142,11 @@ FOR SELECT USING (
 -- 7. Обновление views для админки
 -- =============================================================================
 
--- Обновляем view_dispatcher_dashboard для работы с новыми статусами
-CREATE OR REPLACE VIEW public.view_dispatcher_dashboard AS
+-- Удаляем старую view перед созданием новой (чтобы избежать конфликтов колонок)
+DROP VIEW IF EXISTS public.view_dispatcher_dashboard;
+
+-- Создаем view_dispatcher_dashboard для работы с новыми статусами
+CREATE VIEW public.view_dispatcher_dashboard AS
 SELECT
   r.id as request_id,
   r.status as request_status,
