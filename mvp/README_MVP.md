@@ -92,13 +92,16 @@ curl http://localhost:3000/firma-registrieren | grep "Firmenname"
 *   **Bot States:** Машина состояний для диалогов в WhatsApp.
 
 📄 **Документация:**
-*   [03_database_schema_mvp.md](./03_database_schema_mvp.md) — Описание схемы таблиц (v2.5 с верификацией контактов, кодами регистрации и Telegram-топиками).
+*   [03_database_schema_mvp.md](./03_database_schema_mvp.md) — Описание схемы таблиц (v2.8 с верификацией контактов, кодами регистрации, Telegram-топиками, experience, полями отслеживания заявок и опциональным address_snapshot).
 *   [database_schema_migration_guide.md](./database_schema_migration_guide.md) — **Регламент** безопасных изменений схемы БД.
 *   [init_database_v2.1.sql](./init_database_v2.1.sql) — **Готовый SQL скрипт** для создания БД (v2.2 с дедупликацией вебхуков).
 *   [add_verification_columns_migration.sql](./add_verification_columns_migration.sql) — **Миграция** добавления полей верификации (v2.3).
 *   [remove_clients_not_null_constraints.sql](./remove_clients_not_null_constraints.sql) — **Миграция** снятия обязательности полей имени в clients (v2.3.1).
 *   [add_master_code_fields_migration.sql](./add_master_code_fields_migration.sql) — **Миграция** добавления полей регистрационных кодов в masters (v2.4).
 *   [add_thread_id_migration.sql](./add_thread_id_migration.sql) — **Миграция** добавления полей Telegram-топиков (v2.5).
+*   [add_experience_column_migration.sql](./add_experience_column_migration.sql) — **Миграция** добавления поля experience в master_settings (v2.6).
+*   [add_client_status_fields_migration.sql](./add_client_status_fields_migration.sql) — **Миграция** добавления полей отслеживания заявок в client_status (v2.7).
+*   [remove_address_snapshot_not_null_migration.sql](./remove_address_snapshot_not_null_migration.sql) — **Миграция** снятия обязательности поля address_snapshot (v2.8).
 *   [04_storage_structure.md](./04_storage_structure.md) — Структура папок в S3 (MinIO).
 
 ---
@@ -149,7 +152,7 @@ curl http://localhost:3000/firma-registrieren | grep "Firmenname"
 
 ### ✅ Готово (Design Phase):
 *   [x] Архитектура потоков данных.
-*   [x] Схема Базы Данных (SQL готов, v2.3 с верификацией контактов).
+*   [x] Схема Базы Данных (SQL готов, v2.8 с верификацией контактов, Telegram-топиками, experience, полями отслеживания заявок и опциональным address_snapshot).
 *   [x] Стратегия каналов связи.
 *   [x] Спецификация полей ввода/вывода.
 *   [x] Структура файлового хранилища.

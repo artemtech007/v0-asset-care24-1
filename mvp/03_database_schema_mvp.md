@@ -1,6 +1,6 @@
-# Схема Базы Данных MVP (Supabase / PostgreSQL) v2.5
+# Схема Базы Данных MVP (Supabase / PostgreSQL) v2.8
 
-**Цель:** Архитектура с разделенными таблицами для клиентов и мастеров, поддержка множественных ролей и каналов коммуникации. Добавлена верификация контактов, поля для UTM-подобных кодов регистрации и привязка к Telegram-топикам.
+**Цель:** Архитектура с разделенными таблицами для клиентов и мастеров, поддержка множественных ролей и каналов коммуникации. Добавлена верификация контактов, поля для UTM-подобных кодов регистрации, привязка к Telegram-топикам, поле experience для мастеров, поля отслеживания заявок для клиентов и опциональное поле address_snapshot (v2.8).
 
 ## 1. Основные Таблицы (Tables)
 
@@ -111,7 +111,7 @@
 | `parent_request_id` | bigint | FK -> `requests.id` (nullable) | ID основной заявки (NULL для основных заявок) |
 | `client_id` | text | FK -> `clients.id` | Кто создал заявку (Клиент) |
 | `address_id` | uuid | FK -> `client_addresses.id` | Ссылка на объект клиента |
-| `address_snapshot` | text | NOT NULL | Копия адреса для истории |
+| `address_snapshot` | text | | Копия адреса для истории (опционально) |
 | `postal_code` | text | | ZIP-код места выполнения |
 | `master_id` | text | FK -> `masters.id` (nullable) | Кто выполняет (Мастер) |
 | `status` | text | default 'new' | Статус: `new`, `assigned`, `in_progress`, `completed`, `canceled`, `paused` |
@@ -164,6 +164,10 @@
 | `state_data` | jsonb | default '{}' | Данные состояния (временные данные диалога) |
 | `last_message_at` | timestamptz | default `now()` | Последнее сообщение |
 | `is_active` | boolean | default true | Активная ли сессия |
+| `last_request_id` | bigint | FK -> `requests.id` | ID последней заявки клиента |
+| `last_request_status` | text | | Статус последней заявки клиента |
+| `status_1` | varchar(50) | | Дополнительное поле состояния #1 |
+| `status_2` | varchar(50) | | Дополнительное поле состояния #2 |
 | `created_at` | timestamptz | default `now()` | Дата создания сессии |
 | `updated_at` | timestamptz | default `now()` | Дата обновления |
 
@@ -217,6 +221,7 @@
 **Профиль мастера (данные, перенесенные из masters):**
 | `has_vehicle` | boolean | default false | Наличие транспорта |
 | `experience_years` | integer | | Стаж работы в годах |
+| `experience` | varchar | | Опыт работы мастера (текстовое описание) |
 | `qualifications` | text | | Квалификация и сертификаты |
 | `documents_verified` | boolean | default false | Документы проверены |
 | `approval_date` | timestamptz | | Дата одобрения администратором |
@@ -541,6 +546,9 @@ PostGIS уже установлен и активирован в Supabase.
 - [remove_clients_not_null_constraints.sql](./remove_clients_not_null_constraints.sql) — снятие обязательности полей имени
 - [add_master_code_fields_migration.sql](./add_master_code_fields_migration.sql) — добавление полей регистрационных кодов
 - [add_thread_id_migration.sql](./add_thread_id_migration.sql) — добавление полей Telegram-топиков
+- [add_experience_column_migration.sql](./add_experience_column_migration.sql) — добавление поля experience в master_settings (v2.6)
+- [add_client_status_fields_migration.sql](./add_client_status_fields_migration.sql) — добавление полей отслеживания заявок в client_status (v2.7)
+- [remove_address_snapshot_not_null_migration.sql](./remove_address_snapshot_not_null_migration.sql) — снятие обязательности поля address_snapshot (v2.8)
 
 ```sql
 -- Безопасная миграция с добавлением полей верификации
