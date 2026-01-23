@@ -52,6 +52,9 @@ ADD COLUMN IF NOT EXISTS telegram_message_id text;
 -- 4. Обновление статусов существующих заявок
 -- =============================================================================
 
+-- Удаляем старый check constraint для поля status
+ALTER TABLE public.requests DROP CONSTRAINT IF EXISTS requests_status_check;
+
 -- Маппинг старых статусов на новые
 UPDATE public.requests
 SET status = CASE
@@ -63,6 +66,22 @@ SET status = CASE
     WHEN status = 'paused' THEN 'paused'
     ELSE 'waiting_candidates'
 END;
+
+-- Создаем новый check constraint с расширенным списком статусов
+ALTER TABLE public.requests ADD CONSTRAINT requests_status_check
+CHECK (status IN (
+    'waiting_candidates',
+    'candidates_collecting',
+    'master_selection',
+    'master_assigned',
+    'scheduled',
+    'in_progress',
+    'paused',
+    'completed',
+    'feedback_pending',
+    'feedback_received',
+    'canceled'
+));
 
 -- =============================================================================
 -- 5. Создание существующих кандидатов для заявок с назначенными мастерами
