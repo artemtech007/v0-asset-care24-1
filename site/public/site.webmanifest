@@ -1,0 +1,38 @@
+{
+  "name": "AssetCare24 - Ihr intelligenter Haushalts-Organizer",
+  "short_name": "AssetCare24",
+  "description": "Verwalten Sie Ihr Zuhause smart: Von der Lampenreparatur bis zur kompletten Hausbetreuung.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#004728",
+  "background_color": "#F9F7F2",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "lifestyle", "utilities"],
+  "lang": "de",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "AssetCare24 Dashboard"
+    }
+  ]
+}
