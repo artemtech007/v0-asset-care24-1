@@ -167,6 +167,7 @@ DROP VIEW IF EXISTS public.view_dispatcher_dashboard;
 CREATE VIEW public.view_dispatcher_dashboard AS
 SELECT
   r.id as request_id,
+  r.client_id,
   r.status as request_status,
   r.created_at as request_created,
   r.urgency,

@@ -106,7 +106,7 @@ curl http://localhost:3000/firma-registrieren | grep "Firmenname"
 *   **Bot States:** Машина состояний для диалогов в WhatsApp.
 
 📄 **Документация:**
-*   [03_database_schema_mvp.md](./03_database_schema_mvp.md) — Описание схемы таблиц (v2.8 с верификацией контактов, кодами регистрации, Telegram-топиками, experience, полями отслеживания заявок и опциональным address_snapshot).
+*   [03_database_schema_mvp.md](./03_database_schema_mvp.md) — Описание схемы таблиц (v2.11 с расширенным жизненным циклом заявок и системой кандидатов).
 *   [database_schema_migration_guide.md](./database_schema_migration_guide.md) — **Регламент** безопасных изменений схемы БД.
 *   [init_database_v2.1.sql](./init_database_v2.1.sql) — **Готовый SQL скрипт** для создания БД (v2.2 с дедупликацией вебхуков).
 *   [add_verification_columns_migration.sql](./add_verification_columns_migration.sql) — **Миграция** добавления полей верификации (v2.3).
@@ -116,6 +116,8 @@ curl http://localhost:3000/firma-registrieren | grep "Firmenname"
 *   [add_experience_column_migration.sql](./add_experience_column_migration.sql) — **Миграция** добавления поля experience в master_settings (v2.6).
 *   [add_client_status_fields_migration.sql](./add_client_status_fields_migration.sql) — **Миграция** добавления полей отслеживания заявок в client_status (v2.7).
 *   [remove_address_snapshot_not_null_migration.sql](./remove_address_snapshot_not_null_migration.sql) — **Миграция** снятия обязательности поля address_snapshot (v2.8).
+*   [add_request_code_migration.sql](./add_request_code_migration.sql) — **Миграция** добавления поля request_code в таблицу requests (v2.10).
+*   [fix_requests_status_constraint_migration.sql](./fix_requests_status_constraint_migration.sql) — **Миграция** исправления статусов и constraint для таблицы requests (v2.11).
 *   [04_storage_structure.md](./04_storage_structure.md) — Структура папок в S3 (MinIO).
 
 ---

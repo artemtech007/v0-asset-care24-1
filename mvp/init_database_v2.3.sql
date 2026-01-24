@@ -133,16 +133,22 @@ CREATE TABLE public.requests (
     address_snapshot text NOT NULL,
     postal_code text,
     master_id text REFERENCES public.masters(id) ON DELETE SET NULL,
-    status text DEFAULT 'new',
+    status text DEFAULT 'waiting_candidates',
     category text,
     description text,
+    request_code text,                        -- Уникальный код заявки (для QR-кодов, коротких ссылок)
     urgency text DEFAULT 'normal',
     admin_comment text,
     assigned_at timestamptz,
     started_at timestamptz,
     scheduled_date date,                    -- Запланированная дата выполнения
     created_at timestamptz DEFAULT now(),
-    completed_at timestamptz
+    completed_at timestamptz,
+    CONSTRAINT requests_status_check CHECK (status IN (
+        'waiting_candidates', 'candidates_collecting', 'master_selection',
+        'master_assigned', 'scheduled', 'in_progress', 'paused',
+        'completed', 'feedback_pending', 'feedback_received', 'canceled'
+    ))
 );
 
 -- =====================================================
@@ -320,6 +326,7 @@ CREATE INDEX idx_requests_parent ON requests(parent_request_id);
 CREATE INDEX idx_requests_status ON requests(status);
 CREATE INDEX idx_requests_created_at ON requests(created_at);
 CREATE INDEX idx_requests_urgency_status ON requests(urgency, status);
+CREATE UNIQUE INDEX idx_requests_request_code ON requests(request_code);
 
 -- Request media indexes
 CREATE INDEX idx_request_media_request ON request_media(request_id);

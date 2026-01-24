@@ -1,4 +1,4 @@
-# Схема Базы Данных MVP (Supabase / PostgreSQL) v2.8
+# Схема Базы Данных MVP (Supabase / PostgreSQL) v2.11
 
 **Цель:** Архитектура с разделенными таблицами для клиентов и мастеров, поддержка множественных ролей и каналов коммуникации. Добавлена верификация контактов, поля для UTM-подобных кодов регистрации, привязка к Telegram-топикам, поле experience для мастеров, поля отслеживания заявок для клиентов и опциональное поле address_snapshot (v2.8).
 
@@ -118,6 +118,7 @@
 | `status` | text | default 'waiting_candidates' | Расширенные статусы жизненного цикла |
 | `category` | text | | Категория проблемы (Сантехника, Электрика) |
 | `description` | text | | Текст описания проблемы |
+| `request_code` | text | | Уникальный код заявки (для QR-кодов, коротких ссылок) |
 | `urgency` | text | default 'normal' | Срочность: `low`, `normal`, `high`, `urgent` |
 | `admin_comment` | text | | Внутренние заметки администратора |
 | `assigned_at` | timestamptz | | Дата назначения мастера |
@@ -144,6 +145,9 @@
 **Telegram интеграция:**
 - `published_at` - время публикации заявки в канале
 - `telegram_message_id` - для обновления статуса в Telegram
+
+**Идентификация заявок:**
+- `request_code` - уникальный код заявки для QR-кодов, коротких ссылок и внешней идентификации
 
 ### 1.6.1 `request_candidates` (Кандидаты на заявку) - НОВАЯ v2.9
 Таблица для аккумуляции мастеров-кандидатов на выполнение заявки.
@@ -610,6 +614,8 @@ PostGIS уже установлен и активирован в Supabase.
 - [add_experience_column_migration.sql](./add_experience_column_migration.sql) — добавление поля experience в master_settings (v2.6)
 - [add_client_status_fields_migration.sql](./add_client_status_fields_migration.sql) — добавление полей отслеживания заявок в client_status (v2.7)
 - [remove_address_snapshot_not_null_migration.sql](./remove_address_snapshot_not_null_migration.sql) — снятие обязательности поля address_snapshot (v2.8)
+- [add_request_code_migration.sql](./add_request_code_migration.sql) — добавление поля request_code в таблицу requests (v2.10)
+- [fix_requests_status_constraint_migration.sql](./fix_requests_status_constraint_migration.sql) — исправление статусов и constraint для таблицы requests (v2.11)
 
 ```sql
 -- Безопасная миграция с добавлением полей верификации
@@ -631,6 +637,19 @@ ALTER TABLE masters ADD COLUMN code_value text;
 -- v2.5: Add thread_id fields for Telegram topics
 ALTER TABLE clients ADD COLUMN thread_id text;
 ALTER TABLE masters ADD COLUMN thread_id text;
+
+-- v2.10: Add request_code field to requests
+ALTER TABLE requests ADD COLUMN request_code text;
+
+-- v2.11: Fix requests status constraint and workflow
+ALTER TABLE requests ALTER COLUMN status SET DEFAULT 'waiting_candidates';
+UPDATE requests SET status = 'waiting_candidates' WHERE status = 'new';
+UPDATE requests SET status = 'master_assigned' WHERE status = 'assigned';
+ALTER TABLE requests ADD CONSTRAINT requests_status_check CHECK (status IN (
+    'waiting_candidates', 'candidates_collecting', 'master_selection',
+    'master_assigned', 'scheduled', 'in_progress', 'paused',
+    'completed', 'feedback_pending', 'feedback_received', 'canceled'
+));
 ```
 
 ```sql
