@@ -94,7 +94,7 @@ export function Header() {
               Ihr zuverlässiger Haushalts-Service
             </span>
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded opacity-50 hover:opacity-100">
-                2.7
+                2.71
             </span>
           </Link>
 
